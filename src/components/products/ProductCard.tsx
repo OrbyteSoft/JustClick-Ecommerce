@@ -13,12 +13,26 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const inWishlist = isInWishlist(product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
     toast.success(`${product.name} added to cart`);
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+      toast.success("Removed from wishlist");
+    } else {
+      addToWishlist(product);
+      toast.success("Added to wishlist");
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -60,13 +74,10 @@ const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
             <Button
               size="icon"
               variant="secondary"
-              className="h-9 w-9 rounded-full shadow-soft"
-              onClick={(e) => {
-                e.preventDefault();
-                toast.success("Added to wishlist");
-              }}
+              className={`h-9 w-9 rounded-full shadow-soft ${inWishlist ? "text-destructive" : ""}`}
+              onClick={handleWishlistToggle}
             >
-              <Heart className="h-4 w-4" />
+              <Heart className={`h-4 w-4 ${inWishlist ? "fill-current" : ""}`} />
             </Button>
             <Button
               size="icon"

@@ -93,9 +93,14 @@ const Header = () => {
 
             {/* Actions */}
             <div className="flex items-center gap-2 sm:gap-4">
-              <Link to="/wishlist" className="hidden sm:flex flex-col items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/wishlist" className="relative hidden sm:flex flex-col items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors">
                 <Heart className="h-5 w-5" />
                 <span className="text-xs">Wishlist</span>
+                {wishlistItems.length > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-destructive border-0">
+                    {wishlistItems.length}
+                  </Badge>
+                )}
               </Link>
 
               <Link to="/cart" className="relative flex flex-col items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors">
