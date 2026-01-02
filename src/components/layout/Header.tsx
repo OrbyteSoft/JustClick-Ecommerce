@@ -23,11 +23,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { categories } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { cartItems } = useCart();
+  const { wishlistItems } = useWishlist();
 
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
