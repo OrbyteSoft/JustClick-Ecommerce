@@ -61,7 +61,7 @@ const Cart = () => {
   return (
     <>
       <Helmet>
-        <title>Shopping Cart ({cartItems.length} items) - Supply Sewa</title>
+        <title>{`Shopping Cart (${cartItems.length} items) - Supply Sewa`}</title>
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-background">
