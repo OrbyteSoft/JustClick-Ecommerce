@@ -1,1 +1,10 @@
 project_id = "rczlaqaqgxvhzrsatpmu"
+
+[functions.get-products]
+verify_jwt = false
+
+[functions.invalidate-cache]
+verify_jwt = true
+
+[functions.chat-support]
+verify_jwt = false
