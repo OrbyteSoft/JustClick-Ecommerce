@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
   ShoppingCart,
@@ -10,28 +10,64 @@ import {
   ChevronDown,
   Phone,
   MapPin,
+  LogOut,
+  Settings,
+  Package,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { categories } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
+  const { user, profile, loading, signOut, isAdmin, isSeller } = useAuth();
+  const navigate = useNavigate();
 
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Logged out successfully");
+    navigate("/");
+  };
+
+  const getInitials = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
+    }
+    if (user?.email) {
+      return user.email[0].toUpperCase();
+    }
+    return "U";
+  };
+
+  const getDisplayName = () => {
+    if (profile?.first_name) {
+      return profile.first_name;
+    }
+    if (user?.email) {
+      return user.email.split("@")[0];
+    }
+    return "User";
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -115,27 +151,107 @@ const Header = () => {
                 )}
               </Link>
 
+              {/* User Account Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex flex-col items-center gap-0.5 h-auto py-1 px-2">
-                    <User className="h-5 w-5" />
-                    <span className="text-xs hidden sm:block">Account</span>
+                  <Button variant="ghost" className="flex items-center gap-2 h-auto py-1 px-2">
+                    {loading ? (
+                      <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                    ) : user ? (
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={profile?.avatar_url || undefined} alt={getDisplayName()} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {getInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <User className="h-5 w-5" />
+                    )}
+                    <span className="text-xs hidden sm:block">
+                      {loading ? "..." : user ? getDisplayName() : "Account"}
+                    </span>
+                    <ChevronDown className="h-3 w-3 hidden sm:block" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link to="/auth">Login / Sign Up</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/orders">My Orders</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/profile">My Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/wishlist">My Wishlist</Link>
-                  </DropdownMenuItem>
+                <DropdownMenuContent align="end" className="w-56">
+                  {user ? (
+                    <>
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {profile?.first_name && profile?.last_name 
+                              ? `${profile.first_name} ${profile.last_name}`
+                              : getDisplayName()}
+                          </p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/account/orders" className="flex items-center gap-2">
+                          <Package className="h-4 w-4" />
+                          My Orders
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/account/profile" className="flex items-center gap-2">
+                          <Settings className="h-4 w-4" />
+                          My Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/wishlist" className="flex items-center gap-2">
+                          <Heart className="h-4 w-4" />
+                          My Wishlist
+                        </Link>
+                      </DropdownMenuItem>
+                      {isAdmin() && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link to="/admin" className="flex items-center gap-2 text-primary">
+                              <Shield className="h-4 w-4" />
+                              Admin Dashboard
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {isSeller() && !isAdmin() && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link to="/seller/dashboard" className="flex items-center gap-2 text-primary">
+                              <Package className="h-4 w-4" />
+                              Seller Dashboard
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={handleSignOut}
+                        className="flex items-center gap-2 text-destructive focus:text-destructive"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/auth" className="font-medium">Login / Sign Up</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/track-order">Track Order</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/help">Help & Support</Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -207,7 +323,7 @@ const Header = () => {
                 </li>
               ))}
               <li>
-                <Link to="/deals">
+                <Link to="/hot-deals">
                   <Button variant="ghost" className="text-sm font-medium text-destructive">
                     🔥 Hot Deals
                   </Button>
@@ -237,7 +353,7 @@ const Header = () => {
               ))}
               <li>
                 <Link
-                  to="/deals"
+                  to="/hot-deals"
                   className="flex items-center p-3 rounded-lg bg-accent text-accent-foreground font-semibold"
                   onClick={() => setIsMenuOpen(false)}
                 >
