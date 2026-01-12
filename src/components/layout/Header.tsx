@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Search,
   ShoppingCart,
   Heart,
   User,
@@ -16,7 +15,6 @@ import {
   Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -32,10 +30,10 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import SearchBar from "@/components/search/SearchBar";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
   const { user, profile, loading, signOut, isAdmin, isSeller } = useAuth();
@@ -112,21 +110,7 @@ const Header = () => {
 
             {/* Search bar - Desktop */}
             <div className="hidden md:flex flex-1 max-w-xl">
-              <div className="relative w-full">
-                <Input
-                  type="text"
-                  placeholder="Search for products, brands, categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pr-12 h-12 rounded-full border-2 border-muted focus:border-primary"
-                />
-                <Button
-                  size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full h-10 w-10"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
+              <SearchBar />
             </div>
 
             {/* Actions */}
@@ -268,21 +252,7 @@ const Header = () => {
 
           {/* Mobile search */}
           <div className="md:hidden mt-4">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pr-12 h-11 rounded-full border-2 border-muted focus:border-primary"
-              />
-              <Button
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full h-9 w-9"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
+            <SearchBar isMobile />
           </div>
         </div>
 
