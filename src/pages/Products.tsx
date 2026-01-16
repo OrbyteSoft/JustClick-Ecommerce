@@ -27,6 +27,7 @@ import { products, categories } from "@/data/products";
 const Products = () => {
   const [searchParams] = useSearchParams();
   const categorySlug = searchParams.get("category");
+  const searchQuery = searchParams.get("q") || "";
 
   const [sortBy, setSortBy] = useState("featured");
   const [priceRange, setPriceRange] = useState([0, 300000]);
@@ -38,6 +39,18 @@ const Products = () => {
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.brand.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query)
+      );
+    }
 
     if (categorySlug) {
       result = result.filter(
@@ -71,7 +84,7 @@ const Products = () => {
     }
 
     return result;
-  }, [categorySlug, sortBy, priceRange, selectedBrands]);
+  }, [categorySlug, searchQuery, sortBy, priceRange, selectedBrands]);
 
   const toggleBrand = (brand: string) => {
     setSelectedBrands((prev) =>
@@ -145,13 +158,15 @@ const Products = () => {
     <>
       <Helmet>
         <title>
-          {currentCategory
+          {searchQuery
+            ? `Search: "${searchQuery}" - Supply Sewa`
+            : currentCategory
             ? `${currentCategory.name} - Supply Sewa`
             : "All Products - Supply Sewa"}
         </title>
         <meta
           name="description"
-          content={`Shop ${currentCategory?.name || "all products"} at Supply Sewa. Best prices, quality products, and trusted sellers.`}
+          content={`Shop ${searchQuery ? `results for "${searchQuery}"` : currentCategory?.name || "all products"} at Supply Sewa. Best prices, quality products, and trusted sellers.`}
         />
       </Helmet>
 
@@ -175,7 +190,9 @@ const Products = () => {
             {/* Page header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-foreground mb-2">
-                {currentCategory?.name || "All Products"}
+                {searchQuery
+                  ? `Search results for "${searchQuery}"`
+                  : currentCategory?.name || "All Products"}
               </h1>
               <p className="text-muted-foreground">
                 {filteredProducts.length} products found
