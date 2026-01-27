@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Clock, Flame } from "lucide-react";
+import { ArrowRight, Clock, Flame, ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "@/components/products/ProductCard";
 import { products } from "@/data/products";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 
 const DealsSection = () => {
-  const dealProducts = products.filter((p) => p.discount && p.discount >= 10).slice(0, 4);
+  const dealProducts = products.filter((p) => p.discount && p.discount >= 10).slice(0, 8);
+  const scrollRef = useRef<HTMLDivElement>(null);
   
-  // Countdown timer (for demo purposes, ends in 24 hours)
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
     minutes: 59,
@@ -31,71 +32,97 @@ const DealsSection = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const scroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const scrollAmount = 280;
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
-    <section className="py-12 bg-background">
+    <section className="py-6 bg-muted">
       <div className="container-custom">
-        <div className="gradient-hero rounded-2xl p-6 md:p-8 mb-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4 text-primary-foreground">
-              <div className="p-3 rounded-full bg-primary-foreground/20">
-                <Flame className="h-8 w-8" />
+        {/* Header */}
+        <div className="bg-gradient-to-r from-destructive to-red-700 rounded-lg p-4 md:p-5 mb-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-white">
+              <div className="p-2 rounded-full bg-white/20">
+                <Flame className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold">Flash Deals</h2>
-                <p className="text-primary-foreground/80">Limited time offers - grab them now!</p>
+                <h2 className="text-xl md:text-2xl font-bold">Flash Deals</h2>
+                <p className="text-sm text-white/80 hidden md:block">Limited time offers!</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-primary-foreground">
-                <Clock className="h-5 w-5" />
-                <span className="font-medium">Ends in:</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-white">
+                <Clock className="h-4 w-4" />
+                <span className="text-sm font-medium">Ends in:</span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 {[
-                  { value: timeLeft.hours, label: "HRS" },
-                  { value: timeLeft.minutes, label: "MIN" },
-                  { value: timeLeft.seconds, label: "SEC" },
+                  { value: timeLeft.hours, label: "H" },
+                  { value: timeLeft.minutes, label: "M" },
+                  { value: timeLeft.seconds, label: "S" },
                 ].map((item, index) => (
-                  <div key={index} className="bg-primary-foreground/20 rounded-lg px-3 py-2 text-center min-w-[60px]">
-                    <div className="text-2xl font-bold text-primary-foreground">
+                  <div key={index} className="bg-white/20 rounded px-2 py-1 text-center min-w-[40px]">
+                    <div className="text-lg font-bold text-white leading-none">
                       {String(item.value).padStart(2, "0")}
                     </div>
-                    <div className="text-xs text-primary-foreground/70">{item.label}</div>
+                    <div className="text-[10px] text-white/70">{item.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <Link
-              to="/deals"
-              className="hidden md:flex items-center gap-1 text-primary-foreground font-semibold hover:gap-2 transition-all"
-            >
-              View All Deals
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex h-8 w-8 text-white hover:bg-white/20"
+                onClick={() => scroll("left")}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex h-8 w-8 text-white hover:bg-white/20"
+                onClick={() => scroll("right")}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Link
+                to="/hot-deals"
+                className="flex items-center gap-1 text-white text-sm font-semibold hover:underline"
+              >
+                View All
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        {/* Products Scroll */}
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           {dealProducts.map((product, index) => (
             <div
               key={product.id}
-              className="animate-slide-up"
+              className="flex-shrink-0 w-[180px] md:w-[220px] snap-start animate-fade-in"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <ProductCard product={product} />
+              <ProductCard product={product} variant="compact" />
             </div>
           ))}
         </div>
-
-        <Link
-          to="/deals"
-          className="md:hidden flex items-center justify-center gap-1 text-primary font-semibold mt-6"
-        >
-          View All Deals
-          <ArrowRight className="h-4 w-4" />
-        </Link>
       </div>
     </section>
   );

@@ -14,12 +14,12 @@ interface SearchBarProps {
 }
 
 const popularSearches = [
-  "iPhone",
-  "Samsung",
-  "Laptop",
-  "Headphones",
-  "Sneakers",
-  "Watch",
+  "iPhone Case",
+  "Wireless Earbuds",
+  "Power Bank",
+  "Smartwatch",
+  "Drone",
+  "Gaming Headset",
 ];
 
 const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
@@ -53,7 +53,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter" && query.trim()) {
-        navigate(`/products?search=${encodeURIComponent(query.trim())}`);
+        navigate(`/products?q=${encodeURIComponent(query.trim())}`);
         setIsOpen(false);
         setQuery("");
       }
@@ -72,7 +72,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
 
   const handleSearchSubmit = () => {
     if (query.trim()) {
-      navigate(`/products?search=${encodeURIComponent(query.trim())}`);
+      navigate(`/products?q=${encodeURIComponent(query.trim())}`);
       setIsOpen(false);
       setQuery("");
     }
@@ -80,7 +80,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
 
   const handlePopularSearch = (term: string) => {
     setQuery(term);
-    navigate(`/products?search=${encodeURIComponent(term)}`);
+    navigate(`/products?q=${encodeURIComponent(term)}`);
     setIsOpen(false);
   };
 
@@ -103,7 +103,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
         <Input
           ref={inputRef}
           type="text"
-          placeholder={isMobile ? "Search products..." : "Search for products, brands, categories..."}
+          placeholder={isMobile ? "Search products..." : "Search for electronics, gadgets, accessories..."}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -112,8 +112,8 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           className={cn(
-            "w-full pr-20 border-2 border-muted focus:border-primary",
-            isMobile ? "h-11 rounded-full" : "h-12 rounded-full"
+            "w-full pr-20 bg-white text-foreground placeholder:text-muted-foreground border-0",
+            isMobile ? "h-10 rounded-lg" : "h-11 rounded-sm"
           )}
         />
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">

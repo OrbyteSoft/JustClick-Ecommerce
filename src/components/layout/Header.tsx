@@ -7,12 +7,11 @@ import {
   Menu,
   X,
   ChevronDown,
-  Phone,
-  MapPin,
   LogOut,
   Settings,
   Package,
   Shield,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -69,67 +68,45 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Top bar */}
-      <div className="gradient-dark text-primary-foreground py-2">
-        <div className="container-custom flex items-center justify-between text-sm">
-          <div className="flex items-center gap-6">
-            <a href="tel:+977-1-4123456" className="flex items-center gap-1 hover:text-primary transition-colors">
-              <Phone className="h-3 w-3" />
-              <span className="hidden sm:inline">+977-1-4123456</span>
-            </a>
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              <span className="hidden sm:inline">Kathmandu, Nepal</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link to="/seller/register" className="hover:text-primary transition-colors font-medium">
-              Become a Seller
-            </Link>
-            <Link to="/track-order" className="hover:text-primary transition-colors hidden sm:block">
-              Track Order
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Main header */}
-      <div className="bg-card shadow-soft border-b border-border">
-        <div className="container-custom py-4">
+      {/* Main header - Flipkart style */}
+      <div className="gradient-primary">
+        <div className="container-custom py-3">
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 shrink-0">
-              <div className="gradient-hero rounded-lg p-2">
-                <span className="text-primary-foreground font-bold text-xl">SS</span>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-foreground">Supply Sewa</h1>
-                <p className="text-xs text-muted-foreground">Your Trusted Supplier</p>
+              <div className="bg-white/10 backdrop-blur rounded-lg px-3 py-1.5">
+                <span className="text-white font-bold text-xl tracking-tight">Supply<span className="text-accent">Sewa</span></span>
               </div>
             </Link>
 
             {/* Search bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-xl">
+            <div className="hidden md:flex flex-1 max-w-2xl">
               <SearchBar />
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 sm:gap-4">
-              <Link to="/wishlist" className="relative hidden sm:flex flex-col items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors">
+            <div className="flex items-center gap-1 sm:gap-3">
+              <Link 
+                to="/wishlist" 
+                className="relative hidden sm:flex items-center gap-1.5 text-white/90 hover:text-white transition-colors px-3 py-2"
+              >
                 <Heart className="h-5 w-5" />
-                <span className="text-xs">Wishlist</span>
+                <span className="text-sm font-medium hidden lg:inline">Wishlist</span>
                 {wishlistItems.length > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-destructive border-0">
+                  <Badge className="absolute -top-0.5 left-5 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground border-0">
                     {wishlistItems.length}
                   </Badge>
                 )}
               </Link>
 
-              <Link to="/cart" className="relative flex flex-col items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors">
+              <Link 
+                to="/cart" 
+                className="relative flex items-center gap-1.5 text-white/90 hover:text-white transition-colors px-3 py-2"
+              >
                 <ShoppingCart className="h-5 w-5" />
-                <span className="text-xs hidden sm:block">Cart</span>
+                <span className="text-sm font-medium hidden lg:inline">Cart</span>
                 {cartItemsCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs gradient-hero border-0">
+                  <Badge className="absolute -top-0.5 left-5 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground border-0">
                     {cartItemsCount}
                   </Badge>
                 )}
@@ -138,23 +115,23 @@ const Header = () => {
               {/* User Account Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 h-auto py-1 px-2">
+                  <Button variant="ghost" className="flex items-center gap-2 h-auto py-2 px-3 text-white/90 hover:text-white hover:bg-white/10">
                     {loading ? (
-                      <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                      <div className="h-7 w-7 rounded-full bg-white/20 animate-pulse" />
                     ) : user ? (
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-7 w-7 border-2 border-white/30">
                         <AvatarImage src={profile?.avatar_url || undefined} alt={getDisplayName()} />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        <AvatarFallback className="bg-accent text-accent-foreground text-xs font-bold">
                           {getInitials()}
                         </AvatarFallback>
                       </Avatar>
                     ) : (
                       <User className="h-5 w-5" />
                     )}
-                    <span className="text-xs hidden sm:block">
-                      {loading ? "..." : user ? getDisplayName() : "Account"}
+                    <span className="text-sm font-medium hidden lg:inline">
+                      {loading ? "..." : user ? getDisplayName() : "Login"}
                     </span>
-                    <ChevronDown className="h-3 w-3 hidden sm:block" />
+                    <ChevronDown className="h-3 w-3 hidden lg:block" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -195,7 +172,7 @@ const Header = () => {
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
-                            <Link to="/admin" className="flex items-center gap-2 text-primary">
+                            <Link to="/admin" className="flex items-center gap-2 text-primary font-medium">
                               <Shield className="h-4 w-4" />
                               Admin Dashboard
                             </Link>
@@ -242,7 +219,7 @@ const Header = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
+                className="md:hidden text-white hover:bg-white/10"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -251,64 +228,64 @@ const Header = () => {
           </div>
 
           {/* Mobile search */}
-          <div className="md:hidden mt-4">
+          <div className="md:hidden mt-3">
             <SearchBar isMobile />
           </div>
         </div>
+      </div>
 
-        {/* Category navigation - Desktop */}
-        <nav className="hidden md:block border-t border-border">
-          <div className="container-custom">
-            <ul className="flex items-center gap-1 py-2 overflow-x-auto">
-              <li>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="gap-2 font-semibold text-primary">
-                      <Menu className="h-4 w-4" />
-                      All Categories
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64">
-                    {categories.map((category) => (
-                      <DropdownMenuItem key={category.id} asChild>
-                        <Link to={`/products?category=${category.slug}`} className="flex items-center gap-2">
-                          {category.name}
-                          <Badge variant="secondary" className="ml-auto">
-                            {category.productCount}
-                          </Badge>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </li>
-              {categories.slice(0, 5).map((category) => (
-                <li key={category.id}>
-                  <Link to={`/products?category=${category.slug}`}>
-                    <Button variant="ghost" className="text-sm font-medium">
-                      {category.name}
-                    </Button>
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <Link to="/hot-deals">
-                  <Button variant="ghost" className="text-sm font-medium text-destructive">
-                    🔥 Hot Deals
+      {/* Category navigation - Desktop */}
+      <nav className="hidden md:block bg-card border-b border-border shadow-sm">
+        <div className="container-custom">
+          <ul className="flex items-center gap-1 py-2 overflow-x-auto">
+            <li>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2 font-semibold text-foreground hover:text-primary hover:bg-primary/5">
+                    <Menu className="h-4 w-4" />
+                    All Categories
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-64">
+                  {categories.map((category) => (
+                    <DropdownMenuItem key={category.id} asChild>
+                      <Link to={`/products?category=${category.slug}`} className="flex items-center justify-between">
+                        {category.name}
+                        <Badge variant="secondary" className="ml-auto text-xs">
+                          {category.productCount}
+                        </Badge>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </li>
+            {categories.slice(0, 6).map((category) => (
+              <li key={category.id}>
+                <Link to={`/products?category=${category.slug}`}>
+                  <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5">
+                    {category.name}
                   </Button>
                 </Link>
               </li>
-            </ul>
-          </div>
-        </nav>
-      </div>
+            ))}
+            <li>
+              <Link to="/hot-deals">
+                <Button variant="ghost" className="text-sm font-semibold text-destructive hover:bg-destructive/5">
+                  🔥 Deals
+                </Button>
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </nav>
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-card border-b border-border animate-slide-down">
+        <div className="md:hidden bg-card border-b border-border animate-slide-down shadow-lg">
           <nav className="container-custom py-4">
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {categories.map((category) => (
                 <li key={category.id}>
                   <Link
@@ -324,7 +301,7 @@ const Header = () => {
               <li>
                 <Link
                   to="/hot-deals"
-                  className="flex items-center p-3 rounded-lg bg-accent text-accent-foreground font-semibold"
+                  className="flex items-center p-3 rounded-lg bg-destructive/10 text-destructive font-semibold"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   🔥 Hot Deals
