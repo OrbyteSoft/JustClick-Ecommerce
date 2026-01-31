@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ChatBot from "@/components/chat/ChatBot";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Public pages
 import Index from "./pages/Index";
@@ -54,6 +55,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <ScrollToTop />
                 <ChatBot />
                 <Routes>
                   {/* Public routes */}
