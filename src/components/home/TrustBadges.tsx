@@ -1,55 +1,64 @@
-import { Truck, Shield, RotateCcw, Headphones, CreditCard, Award } from "lucide-react";
+import {
+  Truck,
+  Shield,
+  RotateCcw,
+  Headphones,
+  CreditCard,
+  Award,
+} from "lucide-react";
 
 const badges = [
   {
     icon: Truck,
     title: "Free Delivery",
-    description: "On orders above ₹2,000",
+    description: "Above ₹2,000",
   },
   {
     icon: Shield,
-    title: "Genuine Products",
-    description: "100% authentic items",
+    title: "Authentic",
+    description: "100% Genuine",
   },
   {
     icon: RotateCcw,
     title: "Easy Returns",
-    description: "7-day return policy",
+    description: "7-Day Policy",
   },
   {
     icon: CreditCard,
-    title: "Secure Payment",
-    description: "Multiple payment options",
+    title: "Secure Pay",
+    description: "Encrypted",
   },
   {
     icon: Award,
     title: "Top Brands",
-    description: "Official brand stores",
+    description: "Official Stores",
   },
   {
     icon: Headphones,
     title: "24/7 Support",
-    description: "Always here to help",
+    description: "Live Chat",
   },
 ];
 
 const TrustBadges = () => {
   return (
-    <section className="py-8 bg-secondary">
-      <div className="container-custom">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <section className="bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="container-custom px-0 md:px-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 border-l border-zinc-200 dark:border-zinc-800 lg:border-l-0">
           {badges.map((badge, index) => (
             <div
               key={index}
-              className="flex flex-col items-center text-center p-4"
+              className="flex flex-col items-center lg:items-start text-center lg:text-left p-8 border-r border-b border-zinc-200 dark:border-zinc-800 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50 group"
             >
-              <div className="p-3 rounded-full bg-primary/10 mb-3">
-                <badge.icon className="h-6 w-6 text-primary" />
+              <div className="mb-4">
+                <badge.icon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors stroke-[1.5px]" />
               </div>
-              <h3 className="font-semibold text-secondary-foreground text-sm mb-1">
+
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-zinc-100 mb-1">
                 {badge.title}
               </h3>
-              <p className="text-xs text-secondary-foreground/70">
+
+              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">
                 {badge.description}
               </p>
             </div>

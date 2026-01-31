@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { 
-  Package, 
-  Search, 
-  CheckCircle, 
-  Truck, 
-  Home, 
+import {
+  Package,
+  Search,
+  CheckCircle,
+  Truck,
+  Home,
   Clock,
-  MapPin
+  MapPin,
+  Zap,
+  Activity,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -16,158 +18,191 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// Mock order data for demo
 const mockOrderData = {
-  orderNumber: "SS-DEMO123",
-  status: "shipped",
-  estimatedDelivery: "Jan 15, 2026",
+  orderNumber: "JC-TX9902",
+  status: "In Transit",
+  estimatedDelivery: "Feb 04, 2026",
   items: [
-    { name: "AMD Ryzen 9 7950X Processor", quantity: 1, price: 89999 },
-    { name: "Samsung 980 PRO 2TB NVMe SSD", quantity: 2, price: 32999 },
+    { name: "NVIDIA GeForce RTX 5090 FE", quantity: 1, price: 215000 },
+    { name: "ASUS ROG Swift OLED PG32UCDM", quantity: 1, price: 185000 },
   ],
   timeline: [
-    { status: "Order Placed", date: "Jan 10, 2026 - 10:30 AM", completed: true },
-    { status: "Order Confirmed", date: "Jan 10, 2026 - 11:00 AM", completed: true },
-    { status: "Processing", date: "Jan 11, 2026 - 09:00 AM", completed: true },
-    { status: "Shipped", date: "Jan 12, 2026 - 02:00 PM", completed: true },
-    { status: "Out for Delivery", date: "Expected Jan 15, 2026", completed: false },
-    { status: "Delivered", date: "Expected Jan 15, 2026", completed: false },
+    {
+      status: "Manifest Created",
+      date: "Jan 28, 2026 - 10:30 AM",
+      completed: true,
+    },
+    {
+      status: "Quality Verified",
+      date: "Jan 29, 2026 - 11:00 AM",
+      completed: true,
+    },
+    {
+      status: "Package Secured",
+      date: "Jan 30, 2026 - 09:00 AM",
+      completed: true,
+    },
+    { status: "In Transit", date: "Jan 31, 2026 - 02:00 PM", completed: true },
+    { status: "Out for Delivery", date: "Scheduled Feb 04", completed: false },
+    { status: "Delivery Confirmed", date: "Pending", completed: false },
   ],
   shippingAddress: {
-    name: "John Doe",
-    address: "Kalanki, Kathmandu",
-    phone: "+977 9841234567",
+    name: "Aaryan Adhikari",
+    address: "Durbarmarg, Kathmandu",
+    phone: "+977 9800000000",
   },
 };
 
 const TrackOrder = () => {
   const [searchParams] = useSearchParams();
   const initialOrderNumber = searchParams.get("order") || "";
-  
+
   const [orderNumber, setOrderNumber] = useState(initialOrderNumber);
-  const [searchedOrder, setSearchedOrder] = useState(initialOrderNumber ? mockOrderData : null);
+  const [searchedOrder, setSearchedOrder] = useState(
+    initialOrderNumber ? mockOrderData : null,
+  );
   const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderNumber.trim()) return;
-    
     setIsSearching(true);
-    
-    // Simulate API call
     setTimeout(() => {
-      setSearchedOrder({ ...mockOrderData, orderNumber });
+      setSearchedOrder({
+        ...mockOrderData,
+        orderNumber: orderNumber.toUpperCase(),
+      });
       setIsSearching(false);
-    }, 1000);
+    }, 800);
   };
 
   const formatPrice = (price: number) => `Rs. ${price.toLocaleString()}`;
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
-      case "order placed":
-      case "order confirmed":
-        return <CheckCircle className="h-5 w-5" />;
-      case "processing":
-        return <Package className="h-5 w-5" />;
-      case "shipped":
-      case "out for delivery":
-        return <Truck className="h-5 w-5" />;
-      case "delivered":
-        return <Home className="h-5 w-5" />;
+      case "manifest created":
+        return <Activity className="h-4 w-4" />;
+      case "quality verified":
+        return <CheckCircle className="h-4 w-4" />;
+      case "package secured":
+        return <Package className="h-4 w-4" />;
+      case "in transit":
+        return <Truck className="h-4 w-4" />;
       default:
-        return <Clock className="h-5 w-5" />;
+        return <Clock className="h-4 w-4" />;
     }
   };
 
   return (
     <>
       <Helmet>
-        <title>Track Order - Supply Sewa</title>
-        <meta name="description" content="Track your order status at Supply Sewa" />
+        <title>Track Protocol | Just Click</title>
       </Helmet>
 
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background selection:bg-primary selection:text-white">
         <Header />
         <main className="flex-1">
-          {/* Hero */}
-          <section className="gradient-hero py-12">
-            <div className="container-custom text-center text-primary-foreground">
-              <Package className="h-12 w-12 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold mb-2">Track Your Order</h1>
-              <p className="text-primary-foreground/80">
-                Enter your order number to see the current status
+          {/* Hero - Industrial Header */}
+          <section className="bg-zinc-950 py-20 border-b border-border">
+            <div className="container-custom px-6 text-center">
+              <div className="flex justify-center mb-6">
+                <div className="h-12 w-12 bg-primary/10 flex items-center justify-center rounded-none border border-primary/20">
+                  <Zap className="h-6 w-6 text-gray-500 fill-current" />
+                </div>
+              </div>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">
+                Logistics Tracker.
+              </h1>
+              <p className="text-zinc-500 text-xs font-black uppercase tracking-[0.3em]">
+                Real-time Hardware Synchronization
               </p>
             </div>
           </section>
 
-          <section className="container-custom py-12">
-            {/* Search Form */}
-            <div className="max-w-xl mx-auto mb-12">
-              <form onSubmit={handleSearch} className="flex gap-3">
-                <div className="flex-1">
-                  <Label htmlFor="orderNumber" className="sr-only">Order Number</Label>
+          <section className="container-custom py-16 px-6 max-w-5xl mx-auto">
+            {/* Search Protocol */}
+            <div className="max-w-xl mx-auto mb-20">
+              <form
+                onSubmit={handleSearch}
+                className="flex flex-col sm:flex-row gap-2"
+              >
+                <div className="flex-1 relative">
                   <Input
-                    id="orderNumber"
                     type="text"
-                    placeholder="Enter your order number (e.g., SS-DEMO123)"
+                    placeholder="PROTOCOL ID (E.G. JC-TX9902)"
                     value={orderNumber}
                     onChange={(e) => setOrderNumber(e.target.value)}
-                    className="h-12"
+                    className="h-14 bg-zinc-50 dark:bg-zinc-900 border-border font-black uppercase tracking-widest text-xs focus-visible:ring-primary rounded-none"
                   />
                 </div>
-                <Button type="submit" variant="hero" size="lg" disabled={isSearching}>
-                  <Search className="h-4 w-4 mr-2" />
-                  {isSearching ? "Searching..." : "Track"}
+                <Button
+                  type="submit"
+                  className="h-14 px-8 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs rounded-none transition-all"
+                  disabled={isSearching}
+                >
+                  {isSearching ? "SYNCING..." : "LOCATE"}
                 </Button>
               </form>
             </div>
 
-            {/* Order Details */}
-            {searchedOrder && (
-              <div className="max-w-4xl mx-auto">
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                  {/* Order Info */}
-                  <div className="bg-card border border-border rounded-2xl p-6">
-                    <h3 className="font-semibold mb-4">Order Info</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Order Number</span>
-                        <span className="font-medium">{searchedOrder.orderNumber}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
-                        <span className="font-medium capitalize text-primary">{searchedOrder.status}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Est. Delivery</span>
-                        <span className="font-medium">{searchedOrder.estimatedDelivery}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Shipping Address */}
-                  <div className="bg-card border border-border rounded-2xl p-6">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      Shipping To
+            {searchedOrder ? (
+              <div className="grid lg:grid-cols-12 gap-12">
+                {/* Left Column: Data Manifest */}
+                <div className="lg:col-span-4 space-y-6">
+                  <div className="bg-zinc-950 p-6 border-l-4 border-primary text-white">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4">
+                      Order Manifest
                     </h3>
-                    <div className="text-sm space-y-1">
-                      <p className="font-medium">{searchedOrder.shippingAddress.name}</p>
-                      <p className="text-muted-foreground">{searchedOrder.shippingAddress.address}</p>
-                      <p className="text-muted-foreground">{searchedOrder.shippingAddress.phone}</p>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-zinc-500 text-[9px] font-black uppercase">
+                          Tracking ID
+                        </p>
+                        <p className="font-black text-lg tracking-tighter">
+                          {searchedOrder.orderNumber}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-zinc-500 text-[9px] font-black uppercase">
+                          Status
+                        </p>
+                        <p className="font-black text-primary uppercase">
+                          {searchedOrder.status}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Items */}
-                  <div className="bg-card border border-border rounded-2xl p-6">
-                    <h3 className="font-semibold mb-4">Items</h3>
-                    <div className="space-y-3">
+                  <div className="bg-white dark:bg-zinc-900 border border-border p-6">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                      <MapPin className="h-3 w-3 text-primary" /> Destination
+                    </h3>
+                    <div className="text-xs font-bold space-y-1 uppercase tracking-tight">
+                      <p>{searchedOrder.shippingAddress.name}</p>
+                      <p className="text-muted-foreground">
+                        {searchedOrder.shippingAddress.address}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {searchedOrder.shippingAddress.phone}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-zinc-900 border border-border p-6">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+                      Hardware Inventory
+                    </h3>
+                    <div className="space-y-4">
                       {searchedOrder.items.map((item, idx) => (
-                        <div key={idx} className="text-sm">
-                          <p className="font-medium line-clamp-1">{item.name}</p>
-                          <p className="text-muted-foreground">
-                            Qty: {item.quantity} × {formatPrice(item.price)}
+                        <div
+                          key={idx}
+                          className="border-b border-border pb-3 last:border-0"
+                        >
+                          <p className="text-xs font-black uppercase tracking-tighter leading-tight mb-1">
+                            {item.name}
+                          </p>
+                          <p className="text-[10px] font-bold text-primary uppercase">
+                            QTY: {item.quantity}
                           </p>
                         </div>
                       ))}
@@ -175,55 +210,62 @@ const TrackOrder = () => {
                   </div>
                 </div>
 
-                {/* Timeline */}
-                <div className="bg-card border border-border rounded-2xl p-6">
-                  <h3 className="font-semibold mb-6">Order Timeline</h3>
-                  <div className="relative">
-                    {searchedOrder.timeline.map((step, idx) => (
-                      <div key={idx} className="flex gap-4 pb-8 last:pb-0">
-                        {/* Line */}
-                        {idx < searchedOrder.timeline.length - 1 && (
-                          <div 
-                            className={`absolute left-[18px] top-[40px] w-0.5 h-[calc(100%-80px)] ${
-                              step.completed ? "bg-primary" : "bg-muted"
-                            }`}
-                            style={{ top: `${idx * 80 + 40}px`, height: "60px" }}
-                          />
-                        )}
-                        
-                        {/* Icon */}
-                        <div 
-                          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                            step.completed 
-                              ? "bg-primary text-primary-foreground" 
-                              : "bg-muted text-muted-foreground"
-                          }`}
+                {/* Right Column: Visual Timeline */}
+                <div className="lg:col-span-8">
+                  <div className="bg-white dark:bg-zinc-900 border border-border p-8 md:p-12">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-12">
+                      Deployment Timeline
+                    </h3>
+                    <div className="relative">
+                      {searchedOrder.timeline.map((step, idx) => (
+                        <div
+                          key={idx}
+                          className="flex gap-8 pb-12 last:pb-0 relative"
                         >
-                          {getStatusIcon(step.status)}
+                          {/* Timeline Vertical Line */}
+                          {idx < searchedOrder.timeline.length - 1 && (
+                            <div
+                              className={`absolute left-[19px] top-10 w-px h-full ${
+                                step.completed ? "bg-primary" : "bg-border"
+                              }`}
+                            />
+                          )}
+
+                          {/* Status Marker */}
+                          <div
+                            className={`z-10 w-10 h-10 rounded-none border-2 flex items-center justify-center shrink-0 transition-colors duration-500 ${
+                              step.completed
+                                ? "bg-primary border-primary text-white"
+                                : "bg-background border-border text-muted-foreground"
+                            }`}
+                          >
+                            {getStatusIcon(step.status)}
+                          </div>
+
+                          <div className="pt-1">
+                            <p
+                              className={`text-sm font-black uppercase tracking-tight ${step.completed ? "text-foreground" : "text-muted-foreground"}`}
+                            >
+                              {step.status}
+                            </p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                              {step.date}
+                            </p>
+                          </div>
                         </div>
-                        
-                        {/* Content */}
-                        <div>
-                          <p className={`font-medium ${step.completed ? "text-foreground" : "text-muted-foreground"}`}>
-                            {step.status}
-                          </p>
-                          <p className="text-sm text-muted-foreground">{step.date}</p>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* Empty State */}
-            {!searchedOrder && !isSearching && (
-              <div className="text-center py-12">
-                <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Enter your order number</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Your order number can be found in your order confirmation email or on your receipt.
-                  Try "SS-DEMO123" for a demo.
+            ) : (
+              <div className="text-center py-24 border border-dashed border-border">
+                <Activity className="h-12 w-12 mx-auto text-muted-foreground/30 mb-6" />
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-2">
+                  No Active Protocol Found
+                </h3>
+                <p className="text-xs font-medium text-muted-foreground uppercase">
+                  Enter your tracking signature to initiate synchronization.
                 </p>
               </div>
             )}

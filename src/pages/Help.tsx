@@ -1,156 +1,193 @@
 import { Helmet } from "react-helmet-async";
-import { HelpCircle, Search, MessageCircle, Phone, Mail, ChevronRight } from "lucide-react";
+import {
+  Search,
+  MessageCircle,
+  Phone,
+  Mail,
+  ChevronRight,
+  Truck,
+  RefreshCcw,
+  ShieldCheck,
+  Settings,
+  Cpu,
+  Zap,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Input } from "@/components/ui/input";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Help = () => {
   const categories = [
-    { title: "Orders & Shipping", icon: "📦", count: 12, href: "/faq#orders" },
-    { title: "Returns & Refunds", icon: "🔄", count: 8, href: "/returns" },
-    { title: "Payment Issues", icon: "💳", count: 6, href: "/faq#payment" },
-    { title: "Account & Security", icon: "🔐", count: 10, href: "/faq#account" },
-    { title: "Products & Stock", icon: "🏷️", count: 7, href: "/faq#products" },
-    { title: "Seller Support", icon: "🏪", count: 9, href: "/seller-policy" },
+    {
+      title: "Shipping & Logistics",
+      icon: Truck,
+      count: 12,
+      href: "/faq#shipping",
+    },
+    {
+      title: "Returns & Warranty",
+      icon: RefreshCcw,
+      count: 8,
+      href: "/returns",
+    },
+    { title: "Product Support", icon: Cpu, count: 15, href: "/faq#tech" },
+    {
+      title: "Account Security",
+      icon: ShieldCheck,
+      count: 6,
+      href: "/faq#account",
+    },
+    {
+      title: "Installation Services",
+      icon: Settings,
+      count: 5,
+      href: "/faq#install",
+    },
+    { title: "Payment & EMI", icon: Zap, count: 9, href: "/faq#payment" },
   ];
 
   const popularQuestions = [
     {
-      question: "How do I track my order?",
-      answer: "You can track your order by visiting the Track Order page and entering your order number. You'll receive the order number in your confirmation email.",
+      question: "How do I claim warranty for my electronic device?",
+      answer:
+        "Every gadget comes with a digital invoice in your account. To claim warranty, you can present this at any authorized service center or contact our support team to initiate a pickup for appliances.",
     },
     {
-      question: "What payment methods do you accept?",
-      answer: "We accept eSewa, Khalti, bank transfers, and Cash on Delivery (COD). All online payments are secure and encrypted.",
+      question: "Do you offer installation for large appliances?",
+      answer:
+        "Yes. For washing machines, refrigerators, and ACs, we schedule a certified technician to visit your location within 24-48 hours of delivery.",
     },
     {
-      question: "How long does delivery take?",
-      answer: "Delivery typically takes 3-5 business days within Kathmandu Valley and 5-7 business days for other locations in Nepal.",
+      question: "What is the return policy for unboxed gadgets?",
+      answer:
+        "To maintain technical integrity, gadgets can only be returned if the manufacturer's seal is intact. Defective items are covered under our 7-day replacement policy.",
     },
     {
-      question: "Can I cancel my order?",
-      answer: "Yes, you can cancel your order before it's shipped. Go to your order history, select the order, and click 'Cancel Order'. Refunds are processed within 5-7 business days.",
-    },
-    {
-      question: "How do I become a seller?",
-      answer: "Visit our 'Become a Seller' page and fill out the registration form with your business details. Our team will review your application within 2-3 business days.",
+      question: "Do you provide EMI or Installment plans?",
+      answer:
+        "We offer 0% EMI on select credit cards for purchases over NPR 50,000. Look for the 'EMI Available' tag on product pages.",
     },
   ];
 
   return (
     <>
       <Helmet>
-        <title>Help Center - Supply Sewa</title>
-        <meta name="description" content="Get help with your orders, returns, payments, and more at Supply Sewa Help Center" />
+        <title>Support Center | Just Click</title>
       </Helmet>
 
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background selection:bg-primary selection:text-white">
         <Header />
+
         <main className="flex-1">
-          {/* Hero */}
-          <section className="gradient-hero py-16">
-            <div className="container-custom text-center text-primary-foreground">
-              <HelpCircle className="h-12 w-12 mx-auto mb-4" />
-              <h1 className="text-4xl font-bold mb-4">How can we help you?</h1>
-              <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto mb-8">
-                Search our help center or browse categories below
-              </p>
-              <div className="max-w-xl mx-auto relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          {/* Minimal Hero */}
+          <section className="bg-zinc-950 py-20 border-b border-border relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
+
+            <div className="container-custom relative z-10 text-center max-w-3xl">
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase mb-6">
+                How can we Help?
+              </h1>
+              <div className="relative group">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500 group-focus-within:text-primary transition-colors" />
                 <Input
                   type="text"
-                  placeholder="Search for help..."
-                  className="h-14 pl-12 pr-4 text-lg bg-card text-foreground border-0"
+                  placeholder="Search for order tracking, warranty, or tech specs..."
+                  className="h-16 pl-14 pr-6 text-lg bg-zinc-900 border-zinc-800 text-white rounded-none focus-visible:ring-1 focus-visible:ring-primary transition-all"
                 />
               </div>
             </div>
           </section>
 
-          {/* Categories */}
-          <section className="container-custom py-12">
-            <h2 className="text-2xl font-bold mb-8 text-center">Browse by Category</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Categories Grid */}
+          <section className="container-custom py-20 px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
               {categories.map((cat, idx) => (
                 <Link
                   key={idx}
                   to={cat.href}
-                  className="bg-card border border-border rounded-xl p-6 hover:border-primary hover:shadow-soft transition-all"
+                  className="group p-10 border border-border hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-all flex flex-col items-center text-center"
                 >
-                  <span className="text-3xl mb-3 block">{cat.icon}</span>
-                  <h3 className="font-semibold mb-1">{cat.title}</h3>
-                  <p className="text-sm text-muted-foreground">{cat.count} articles</p>
+                  <cat.icon className="h-8 w-8 mb-6 text-zinc-400 group-hover:text-primary transition-colors" />
+                  <h3 className="font-black uppercase tracking-widest text-sm mb-2">
+                    {cat.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-tighter italic">
+                    {cat.count} Resources
+                  </p>
                 </Link>
               ))}
             </div>
           </section>
 
-          {/* Popular Questions */}
-          <section className="bg-muted py-12">
-            <div className="container-custom">
-              <h2 className="text-2xl font-bold mb-8 text-center">Popular Questions</h2>
-              <div className="max-w-3xl mx-auto">
-                <Accordion type="single" collapsible className="space-y-4">
-                  {popularQuestions.map((faq, idx) => (
-                    <AccordionItem
-                      key={idx}
-                      value={`item-${idx}`}
-                      className="bg-card border border-border rounded-xl px-6"
-                    >
-                      <AccordionTrigger className="hover:no-underline py-4">
-                        <span className="text-left font-medium">{faq.question}</span>
-                      </AccordionTrigger>
-                      <AccordionContent className="pb-4 text-muted-foreground">
-                        {faq.answer}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-                <div className="text-center mt-8">
-                  <Link to="/faq" className="text-primary hover:underline inline-flex items-center gap-1">
-                    View all FAQs <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
+          {/* Popular Questions - Clean Style */}
+          <section className="border-t border-border py-20 bg-zinc-50/50 dark:bg-transparent px-6">
+            <div className="container-custom max-w-4xl">
+              <h2 className="text-2xl font-black uppercase tracking-tighter mb-12 text-center">
+                Frequently Asked Questions
+              </h2>
+              <Accordion type="single" collapsible className="space-y-4">
+                {popularQuestions.map((faq, idx) => (
+                  <AccordionItem
+                    key={idx}
+                    value={`item-${idx}`}
+                    className="border border-border bg-background px-6 rounded-none transition-all hover:border-zinc-400 dark:hover:border-zinc-700"
+                  >
+                    <AccordionTrigger className="hover:no-underline py-6 text-left font-bold text-base md:text-lg uppercase tracking-tight">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-6 text-muted-foreground leading-relaxed font-medium">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
           </section>
 
-          {/* Contact Options */}
-          <section className="container-custom py-12">
-            <h2 className="text-2xl font-bold mb-8 text-center">Still need help?</h2>
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-accent flex items-center justify-center">
-                  <MessageCircle className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">Live Chat</h3>
-                <p className="text-sm text-muted-foreground mb-4">Chat with our support team</p>
-                <button className="text-primary hover:underline text-sm font-medium">Start Chat</button>
+          {/* Minimal Contact Footer */}
+          <section className="container-custom py-24 border-t border-border px-6">
+            <div className="grid md:grid-cols-3 gap-12 text-center max-w-5xl mx-auto">
+              <div className="space-y-4">
+                <MessageCircle className="h-6 w-6 mx-auto text-primary" />
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">
+                  Live Support
+                </h4>
+                <button className="text-sm font-bold border-b-2 border-primary pb-1 hover:text-primary transition-all">
+                  Start Conversation
+                </button>
               </div>
-              <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-accent flex items-center justify-center">
-                  <Phone className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">Call Us</h3>
-                <p className="text-sm text-muted-foreground mb-4">Sun-Fri, 9AM-6PM</p>
-                <a href="tel:+977-1-4123456" className="text-primary hover:underline text-sm font-medium">
+              <div className="space-y-4">
+                <Phone className="h-6 w-6 mx-auto text-primary" />
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">
+                  Technical Hotline
+                </h4>
+                <a href="tel:+97714123456" className="text-sm font-bold block">
                   +977-1-4123456
                 </a>
               </div>
-              <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-accent flex items-center justify-center">
-                  <Mail className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">Email</h3>
-                <p className="text-sm text-muted-foreground mb-4">We'll respond within 24hrs</p>
-                <a href="mailto:support@supplysewa.com" className="text-primary hover:underline text-sm font-medium">
-                  support@supplysewa.com
+              <div className="space-y-4">
+                <Mail className="h-6 w-6 mx-auto text-primary" />
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">
+                  Email Support
+                </h4>
+                <a
+                  href="mailto:support@justclick.com"
+                  className="text-sm font-bold block"
+                >
+                  support@justclick.com
                 </a>
               </div>
             </div>
           </section>
         </main>
+
         <Footer />
       </div>
     </>

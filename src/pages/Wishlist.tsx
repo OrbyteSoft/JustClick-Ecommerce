@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Heart, ArrowRight, Trash2, ShoppingCart } from "lucide-react";
+import { Heart, ArrowRight, Trash2, ShoppingCart, Zap } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -14,39 +14,45 @@ const Wishlist = () => {
 
   const formatPrice = (price: number) => `Rs. ${price.toLocaleString()}`;
 
-  const handleAddToCart = (product: typeof wishlistItems[0]) => {
+  const handleAddToCart = (product: any) => {
     addToCart(product);
     removeFromWishlist(product.id);
-    toast.success(`${product.name} moved to cart`);
+    toast.success(`${product.name} deployed to cart`);
   };
 
   const handleRemove = (productId: string, productName: string) => {
     removeFromWishlist(productId);
-    toast.success(`${productName} removed from wishlist`);
+    toast.error(`${productName} removed from vault`);
   };
 
   if (wishlistItems.length === 0) {
     return (
       <>
         <Helmet>
-          <title>My Wishlist - Supply Sewa</title>
+          <title>Saved Protocols | Just Click</title>
         </Helmet>
 
-        <div className="min-h-screen flex flex-col bg-background">
+        <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
           <Header />
-          <main className="flex-1 flex items-center justify-center">
-            <div className="text-center px-4">
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
-                <Heart className="h-12 w-12 text-muted-foreground" />
+          <main className="flex-1 flex items-center justify-center py-20">
+            <div className="text-center px-6 max-w-md">
+              <div className="w-20 h-20 mx-auto mb-8 bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center border border-border">
+                <Heart className="h-8 w-8 text-zinc-400" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">Your wishlist is empty</h1>
-              <p className="text-muted-foreground mb-6">
-                Save items you love to your wishlist and revisit them anytime.
+              <h1 className="text-3xl font-black uppercase tracking-tighter mb-4">
+                Vault is <span className="text-primary">Empty.</span>
+              </h1>
+              <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest leading-relaxed mb-8">
+                Your high-performance wishlist is currently inactive. Archive
+                hardware you desire for quick deployment.
               </p>
               <Link to="/products">
-                <Button size="lg" variant="hero">
-                  Explore Products
-                  <ArrowRight className="h-5 w-5 ml-2" />
+                <Button
+                  size="lg"
+                  className="rounded-none px-8 font-black uppercase tracking-widest text-xs h-14"
+                >
+                  Browse Hardware
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
             </div>
@@ -60,70 +66,93 @@ const Wishlist = () => {
   return (
     <>
       <Helmet>
-        <title>{`My Wishlist (${wishlistItems.length} items) - Supply Sewa`}</title>
+        <title>{`Wishlist (${wishlistItems.length}) | Just Click`}</title>
       </Helmet>
 
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
         <Header />
         <main className="flex-1">
-          <div className="container-custom py-8">
-            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-foreground">My Wishlist</h1>
-              <Button variant="outline" onClick={clearWishlist}>
-                Clear All
+          <div className="container-custom py-12 px-6">
+            {/* Header Area */}
+            <div className="flex flex-row items-end justify-between mb-12 gap-6 border-b border-zinc-100 dark:border-zinc-900 pb-8">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="h-4 w-4 text-primary fill-current" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">
+                    User Archive
+                  </span>
+                </div>
+                <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase">
+                  My <span className="text-primary">Wishlist.</span>
+                </h1>
+              </div>
+
+              <Button
+                variant="ghost"
+                className="text-[10px] font-black uppercase tracking-widest hover:bg-destructive/10 hover:text-destructive rounded-none p-0 h-auto md:h-10 md:px-4"
+                onClick={clearWishlist}
+              >
+                Flush All Data
               </Button>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1 bg-border border border-border">
               {wishlistItems.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-elevated transition-all duration-300"
+                  className="bg-background group relative flex flex-col p-6 transition-all"
                 >
-                  <div className="relative aspect-square overflow-hidden bg-muted">
+                  {/* Image Container */}
+                  <div className="relative aspect-square overflow-hidden mb-6 bg-zinc-50 dark:bg-zinc-900 border border-border">
                     <Link to={`/product/${product.slug}`}>
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                       />
                     </Link>
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="absolute top-3 right-3 h-9 w-9 rounded-full"
+                    <button
+                      className="absolute top-0 right-0 p-3 bg-background border-l border-b border-border hover:bg-destructive hover:text-white transition-colors"
                       onClick={() => handleRemove(product.id, product.name)}
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
 
-                  <div className="p-4">
-                    <p className="text-xs text-muted-foreground mb-1">{product.brand}</p>
-                    <Link to={`/product/${product.slug}`}>
-                      <h3 className="font-semibold text-foreground line-clamp-2 mb-3 hover:text-primary transition-colors">
-                        {product.name}
-                      </h3>
-                    </Link>
-
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-lg font-bold text-primary">
-                        {formatPrice(product.price)}
-                      </span>
-                      {product.originalPrice && (
-                        <span className="text-sm text-muted-foreground line-through">
-                          {formatPrice(product.originalPrice)}
-                        </span>
-                      )}
+                  {/* Info */}
+                  <div className="flex-1 flex flex-col">
+                    <div className="mb-auto">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">
+                        {product.brand}
+                      </p>
+                      <Link to={`/product/${product.slug}`}>
+                        <h3 className="text-sm font-black uppercase tracking-tight line-clamp-2 mb-4 group-hover:text-primary transition-colors">
+                          {product.name}
+                        </h3>
+                      </Link>
                     </div>
 
-                    <Button
-                      className="w-full"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Move to Cart
-                    </Button>
+                    <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-muted-foreground font-bold line-through decoration-primary">
+                          {product.originalPrice
+                            ? formatPrice(product.originalPrice)
+                            : ""}
+                        </span>
+                        <span className="text-lg font-black tracking-tighter">
+                          {formatPrice(product.price)}
+                        </span>
+                      </div>
+
+                      <Button
+                        size="icon"
+                        className="h-12 w-12 rounded-none bg-zinc-950 dark:bg-white dark:text-zinc-950"
+                        onClick={() => handleAddToCart(product)}
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}

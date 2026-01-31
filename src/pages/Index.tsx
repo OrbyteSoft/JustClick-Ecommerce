@@ -12,12 +12,15 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Supply Sewa - Nepal's #1 Electronics Accessories Store</title>
+        <title>Just Click - Nepal's #1 Electronics & Gadget Store</title>
         <meta
           name="description"
-          content="Shop the latest electronic accessories, drones, cameras, mobile accessories, audio gear, and smart devices at Supply Sewa. Genuine products, fast delivery, best prices."
+          content="Shop the latest electronic gadgets, home appliances, drones, cameras, and smart devices at Just Click. Quality products, fast delivery, and the best prices in Nepal."
         />
-        <meta name="keywords" content="electronics Nepal, drones, cameras, headphones, smartwatch, gaming gear, mobile accessories, computer peripherals" />
+        <meta
+          name="keywords"
+          content="Just Click, electronics Nepal, gadgets, home appliances, drones, cameras, headphones, smartwatch, gaming gear, mobile accessories"
+        />
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-muted">

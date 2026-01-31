@@ -30,8 +30,6 @@ import FAQ from "./pages/FAQ";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import RefundPolicy from "./pages/RefundPolicy";
-import SellerPolicy from "./pages/SellerPolicy";
-import SellerRegister from "./pages/SellerRegister";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -78,15 +76,15 @@ const App = () => (
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/refund-policy" element={<RefundPolicy />} />
-                  <Route path="/seller-policy" element={<SellerPolicy />} />
-                  <Route path="/seller/register" element={<SellerRegister />} />
-                  
                   {/* Admin routes - protected */}
-                  <Route path="/admin" element={
-                    <ProtectedRoute requiredRole="admin">
-                      <AdminLayout />
-                    </ProtectedRoute>
-                  }>
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AdminLayout />
+                      </ProtectedRoute>
+                    }
+                  >
                     <Route index element={<Dashboard />} />
                     <Route path="products" element={<AdminProducts />} />
                     <Route path="orders" element={<Orders />} />
@@ -95,7 +93,7 @@ const App = () => (
                     <Route path="categories" element={<Categories />} />
                     <Route path="settings" element={<Settings />} />
                   </Route>
-                  
+
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

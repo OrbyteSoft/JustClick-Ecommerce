@@ -1,57 +1,125 @@
 import { Helmet } from "react-helmet-async";
-import { Truck, MapPin, Clock, Package, CreditCard, Globe } from "lucide-react";
+import { Truck, Zap, ShieldCheck, BoxSelect } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 const Shipping = () => {
   const shippingZones = [
-    { zone: "Kathmandu Valley", time: "1-2 days", cost: "Rs. 100", freeAbove: "Rs. 3,000" },
-    { zone: "Major Cities", time: "2-4 days", cost: "Rs. 150", freeAbove: "Rs. 5,000" },
-    { zone: "Other Districts", time: "4-7 days", cost: "Rs. 200", freeAbove: "Rs. 7,000" },
-    { zone: "Remote Areas", time: "7-10 days", cost: "Rs. 300", freeAbove: "Rs. 10,000" },
+    {
+      zone: "Kathmandu Hub",
+      time: "24-48 Hours",
+      cost: "Rs. 100",
+      freeAbove: "Rs. 5,000",
+    },
+    {
+      zone: "Major Tech Corridors",
+      time: "2-3 Days",
+      cost: "Rs. 250",
+      freeAbove: "Rs. 15,000",
+    },
+    {
+      zone: "Regional Districts",
+      time: "4-6 Days",
+      cost: "Rs. 400",
+      freeAbove: "Rs. 25,000",
+    },
+    {
+      zone: "Priority Remote",
+      time: "7-9 Days",
+      cost: "Rs. 600",
+      freeAbove: "Rs. 50,000",
+    },
   ];
 
   return (
     <>
       <Helmet>
-        <title>Shipping Information - Supply Sewa</title>
-        <meta name="description" content="Learn about Supply Sewa's shipping policies, delivery times, and costs" />
+        <title>Logistics Protocols | Just Click</title>
+        <meta
+          name="description"
+          content="Just Click shipping infrastructure, delivery timelines, and hardware safety protocols across Nepal."
+        />
       </Helmet>
 
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background selection:bg-primary selection:text-white">
         <Header />
         <main className="flex-1">
-          {/* Hero */}
-          <section className="gradient-hero py-16">
-            <div className="container-custom text-center text-primary-foreground">
-              <Truck className="h-12 w-12 mx-auto mb-4" />
-              <h1 className="text-4xl font-bold mb-4">Shipping Information</h1>
-              <p className="text-lg text-primary-foreground/80">
-                Fast and reliable delivery across Nepal
+          {/* Hero Section */}
+          <section className="bg-zinc-950 py-20 md:py-28 border-b border-border relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-full h-full opacity-5 pointer-events-none">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary blur-[120px] rounded-full" />
+            </div>
+
+            <div className="container-custom relative z-10 text-center px-6">
+              <div className="inline-flex items-center gap-2 mb-6 text-gray-500">
+                <Truck className="h-5 w-5" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">
+                  Hardware Deployment
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-none mb-6">
+                Logistics Infrastructure.
+              </h1>
+              <p className="text-zinc-400 text-xs md:text-sm font-bold max-w-2xl mx-auto uppercase tracking-widest leading-relaxed">
+                Precision handling and express delivery protocols for
+                high-performance hardware.
               </p>
             </div>
           </section>
 
-          {/* Shipping Zones */}
-          <section className="container-custom py-12">
-            <h2 className="text-2xl font-bold mb-8 text-center">Shipping Rates & Delivery Times</h2>
-            <div className="max-w-4xl mx-auto overflow-x-auto">
-              <table className="w-full">
+          {/* Shipping Matrix */}
+          <section className="container-custom py-20 px-6">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 border-b border-zinc-900 pb-8">
+              <div className="max-w-md">
+                <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">
+                  Shipping Matrix
+                </h2>
+                <p className="text-muted-foreground text-xs font-medium uppercase">
+                  Standard delivery timelines based on regional infrastructure
+                  capability.
+                </p>
+              </div>
+              <div className="text-primary text-[10px] font-black uppercase tracking-widest bg-primary/10 px-4 py-2 border border-primary/20">
+                Updated Jan 2026
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-border">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-4 px-4 font-semibold">Zone</th>
-                    <th className="text-left py-4 px-4 font-semibold">Delivery Time</th>
-                    <th className="text-left py-4 px-4 font-semibold">Shipping Cost</th>
-                    <th className="text-left py-4 px-4 font-semibold">Free Shipping Above</th>
+                  <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-border">
+                    <th className="text-left py-6 px-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Regional Zone
+                    </th>
+                    <th className="text-left py-6 px-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Est. Deployment
+                    </th>
+                    <th className="text-left py-6 px-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Standard Fee
+                    </th>
+                    <th className="text-left py-6 px-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Protocol Zero (Free)
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border">
                   {shippingZones.map((zone, idx) => (
-                    <tr key={idx} className="border-b border-border">
-                      <td className="py-4 px-4">{zone.zone}</td>
-                      <td className="py-4 px-4">{zone.time}</td>
-                      <td className="py-4 px-4">{zone.cost}</td>
-                      <td className="py-4 px-4 text-green-600">{zone.freeAbove}</td>
+                    <tr
+                      key={idx}
+                      className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors"
+                    >
+                      <td className="py-6 px-6 text-sm font-black uppercase tracking-tight">
+                        {zone.zone}
+                      </td>
+                      <td className="py-6 px-6 text-xs font-bold text-muted-foreground">
+                        {zone.time}
+                      </td>
+                      <td className="py-6 px-6 text-xs font-bold">
+                        {zone.cost}
+                      </td>
+                      <td className="py-6 px-6 text-xs font-black text-primary uppercase italic">
+                        {zone.freeAbove}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -59,69 +127,110 @@ const Shipping = () => {
             </div>
           </section>
 
-          {/* Features */}
-          <section className="bg-muted py-12">
+          {/* Operational Standards */}
+          <section className="bg-zinc-50 dark:bg-zinc-900/30 py-20 border-y border-border px-6">
             <div className="container-custom">
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="bg-card border border-border rounded-xl p-6 text-center">
-                  <Package className="h-10 w-10 mx-auto mb-4 text-primary" />
-                  <h3 className="font-semibold mb-2">Secure Packaging</h3>
-                  <p className="text-sm text-muted-foreground">
-                    All items are carefully packed to ensure safe delivery
+              <div className="grid md:grid-cols-3 gap-1 bg-border border border-border">
+                <div className="bg-background p-10 group">
+                  <BoxSelect className="h-8 w-8 mb-6 text-primary transition-transform group-hover:scale-110" />
+                  <h3 className="text-sm font-black uppercase tracking-widest mb-4">
+                    ESD Protection
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium leading-relaxed uppercase">
+                    All delicate electronics are packed with anti-static
+                    shielding and reinforced structural cushioning.
                   </p>
                 </div>
-                <div className="bg-card border border-border rounded-xl p-6 text-center">
-                  <MapPin className="h-10 w-10 mx-auto mb-4 text-primary" />
-                  <h3 className="font-semibold mb-2">Real-time Tracking</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Track your order status from warehouse to doorstep
+                <div className="bg-background p-10 group">
+                  <Zap className="h-8 w-8 mb-6 text-primary transition-transform group-hover:scale-110" />
+                  <h3 className="text-sm font-black uppercase tracking-widest mb-4">
+                    Express Sync
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium leading-relaxed uppercase">
+                    Real-time synchronization between our warehouse and
+                    logistics partners ensures 24H processing.
                   </p>
                 </div>
-                <div className="bg-card border border-border rounded-xl p-6 text-center">
-                  <Clock className="h-10 w-10 mx-auto mb-4 text-primary" />
-                  <h3 className="font-semibold mb-2">On-time Delivery</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We strive to deliver within the promised timeframe
+                <div className="bg-background p-10 group">
+                  <ShieldCheck className="h-8 w-8 mb-6 text-primary transition-transform group-hover:scale-110" />
+                  <h3 className="text-sm font-black uppercase tracking-widest mb-4">
+                    Insured Transit
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium leading-relaxed uppercase">
+                    High-value hardware is fully insured during transit,
+                    covering all manufacturing and shipping defects.
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Policies */}
-          <section className="container-custom py-12">
-            <div className="max-w-3xl mx-auto prose prose-gray dark:prose-invert">
-              <h2>Shipping Policies</h2>
-              
-              <h3>Order Processing</h3>
-              <p>
-                Orders are processed within 1-2 business days after payment confirmation. 
-                You will receive an email notification once your order has been shipped.
-              </p>
+          {/* Policies Documentation */}
+          <section className="container-custom py-24 px-6">
+            <div className="max-w-3xl mx-auto">
+              <div className="flex items-center gap-4 mb-12">
+                <div className="h-px bg-primary flex-1"></div>
+                <h2 className="text-xs font-black uppercase tracking-[0.5em] text-primary whitespace-nowrap">
+                  Operational Policies
+                </h2>
+                <div className="h-px bg-zinc-800 flex-1"></div>
+              </div>
 
-              <h3>Delivery Partners</h3>
-              <p>
-                We partner with trusted courier services to ensure safe and timely delivery:
-              </p>
-              <ul>
-                <li>Nepal Post</li>
-                <li>Dash Courier</li>
-                <li>NCM Courier</li>
-                <li>Local delivery partners for specific areas</li>
-              </ul>
+              <div className="space-y-16">
+                <article>
+                  <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-3">
+                    <span className="text-primary font-mono">01.</span>{" "}
+                    Processing Logic
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-loose uppercase tracking-tight">
+                    Hardware verification and security checks occur within 12-24
+                    hours of order authorization. Technical builds (Custom PCs)
+                    require an additional 48 hours for stress testing and BIOS
+                    configuration prior to deployment.
+                  </p>
+                </article>
 
-              <h3>Large Items & Bulk Orders</h3>
-              <p>
-                For tiles, marbles, and other heavy materials, special shipping arrangements 
-                may apply. Our team will contact you to coordinate delivery for bulk orders.
-              </p>
+                <article>
+                  <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-3">
+                    <span className="text-primary font-mono">02.</span> Verified
+                    Logistics Partners
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-loose uppercase tracking-tight mb-6">
+                    We exclusively utilize tier-1 logistics networks for
+                    hardware security:
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      "TechExpress Nepal",
+                      "Swift Logistics",
+                      "Global Priority",
+                      "Just Click Internal Fleet",
+                    ].map((partner) => (
+                      <div
+                        key={partner}
+                        className="border border-border p-4 text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                      >
+                        <div className="w-1.5 h-1.5 bg-primary rounded-none"></div>{" "}
+                        {partner}
+                      </div>
+                    ))}
+                  </div>
+                </article>
 
-              <h3>Missing or Damaged Items</h3>
-              <p>
-                If your package arrives damaged or items are missing, please contact us within 
-                48 hours of delivery with photos of the damage. We will arrange a replacement 
-                or refund as per our return policy.
-              </p>
+                <article>
+                  <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-3">
+                    <span className="text-primary font-mono">03.</span> Arrival
+                    Verification
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-loose uppercase tracking-tight">
+                    Recipients are required to inspect packaging integrity upon
+                    arrival. In the rare event of transit-related structural
+                    damage, report the incident to our hardware support team via
+                    the <strong>Track Protocol</strong> interface within 24
+                    hours.
+                  </p>
+                </article>
+              </div>
             </div>
           </section>
         </main>

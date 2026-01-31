@@ -1,171 +1,233 @@
 import { Helmet } from "react-helmet-async";
-import { RotateCcw, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import {
+  RotateCcw,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  ArrowRight,
+  ShieldCheck,
+} from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 const Returns = () => {
   const steps = [
-    { step: 1, title: "Initiate Return", desc: "Contact us within 7 days of delivery" },
-    { step: 2, title: "Get Approval", desc: "Our team reviews and approves your request" },
-    { step: 3, title: "Ship Item Back", desc: "Pack the item securely and ship it to us" },
-    { step: 4, title: "Get Refund", desc: "Refund processed within 5-7 business days" },
+    {
+      step: "01",
+      title: "Submit Request",
+      desc: "Initiate via your dashboard within 7 days",
+    },
+    {
+      step: "02",
+      title: "Technical Review",
+      desc: "Our experts verify the claim remotely",
+    },
+    {
+      step: "03",
+      title: "Secure Pickup",
+      desc: "We arrange collection for large appliances",
+    },
+    {
+      step: "04",
+      title: "Final Credit",
+      desc: "Refund issued to your original payment method",
+    },
   ];
 
   return (
     <>
       <Helmet>
-        <title>Returns & Refunds - Supply Sewa</title>
-        <meta name="description" content="Learn about Supply Sewa's return and refund policies" />
+        <title>Returns Policy | Just Click</title>
       </Helmet>
 
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background selection:bg-primary selection:text-white">
         <Header />
+
         <main className="flex-1">
-          {/* Hero */}
-          <section className="gradient-hero py-16">
-            <div className="container-custom text-center text-primary-foreground">
-              <RotateCcw className="h-12 w-12 mx-auto mb-4" />
-              <h1 className="text-4xl font-bold mb-4">Returns & Refunds</h1>
-              <p className="text-lg text-primary-foreground/80">
-                Easy returns within 7 days of delivery
+          {/* Hero Section */}
+          <section className="bg-zinc-950 py-24 border-b border-border">
+            <div className="container-custom max-w-4xl px-6">
+              <div className="flex items-center gap-2 mb-6 text-gray-500">
+                <ShieldCheck className="h-5 w-5" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                  Consumer Protection
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-none">
+                Returns & <br />
+                <span className="text-gray-500">Technical Refunds.</span>
+              </h1>
+              <p className="mt-8 text-zinc-400 text-lg font-medium max-w-xl">
+                Our policy is designed to protect your investment in
+                high-quality technology. Simple, transparent, and fair.
               </p>
             </div>
           </section>
 
-          {/* Process Steps */}
-          <section className="container-custom py-12">
-            <h2 className="text-2xl font-bold mb-8 text-center">Return Process</h2>
-            <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          {/* Process Timeline */}
+          <section className="container-custom py-24 px-6 border-b border-border">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-center text-muted-foreground mb-16">
+              The Return Protocol
+            </h2>
+            <div className="grid md:grid-cols-4 gap-12 max-w-5xl mx-auto">
               {steps.map((s, idx) => (
-                <div key={idx} className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold">
+                <div key={idx} className="relative group">
+                  <div className="text-4xl font-black text-primary/20 group-hover:text-primary transition-colors mb-4 leading-none">
                     {s.step}
                   </div>
-                  <h3 className="font-semibold mb-2">{s.title}</h3>
-                  <p className="text-sm text-muted-foreground">{s.desc}</p>
+                  <h3 className="font-bold uppercase tracking-tight text-sm mb-2">
+                    {s.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                    {s.desc}
+                  </p>
+                  {idx < 3 && (
+                    <ArrowRight className="hidden md:block absolute -right-6 top-2 h-4 w-4 text-zinc-800" />
+                  )}
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Eligibility */}
-          <section className="bg-muted py-12">
-            <div className="container-custom">
-              <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                {/* Eligible */}
-                <div className="bg-card border border-border rounded-xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
-                    <h3 className="font-semibold text-lg">Eligible for Return</h3>
+          {/* Eligibility Matrix */}
+          <section className="bg-zinc-50/50 dark:bg-transparent py-24 border-b border-border">
+            <div className="container-custom px-6">
+              <div className="grid md:grid-cols-2 gap-px bg-border border border-border max-w-5xl mx-auto">
+                {/* Eligible Column */}
+                <div className="bg-background p-10 md:p-14">
+                  <div className="flex items-center gap-4 mb-8">
+                    <CheckCircle className="h-6 w-6 text-primary" />
+                    <h3 className="font-black uppercase tracking-widest text-sm">
+                      Valid Returns
+                    </h3>
                   </div>
-                  <ul className="space-y-3 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                      Defective or damaged products
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                      Wrong item delivered
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                      Item not matching description
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                      Unused item in original packaging
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                      Electronics with manufacturing defects
-                    </li>
+                  <ul className="space-y-6">
+                    {[
+                      "Factory defects or DOA (Dead on Arrival) units",
+                      "Logistical errors (Wrong SKU or model)",
+                      "Unopened gadgets with intact security seals",
+                      "Transit damage verified at time of delivery",
+                    ].map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-4 text-sm font-medium text-muted-foreground"
+                      >
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                        {item}
+                      </li>
+                    ))}
                   </ul>
                 </div>
 
-                {/* Not Eligible */}
-                <div className="bg-card border border-border rounded-xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <XCircle className="h-6 w-6 text-destructive" />
-                    <h3 className="font-semibold text-lg">Not Eligible for Return</h3>
+                {/* Not Eligible Column */}
+                <div className="bg-background p-10 md:p-14">
+                  <div className="flex items-center gap-4 mb-8">
+                    <XCircle className="h-6 w-6 text-zinc-400" />
+                    <h3 className="font-black uppercase tracking-widest text-sm">
+                      Ineligible Items
+                    </h3>
                   </div>
-                  <ul className="space-y-3 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                      Used or installed products
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                      Custom-cut tiles and marbles
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                      Items damaged by misuse
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                      Returns after 7 days
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                      Items without original packaging
-                    </li>
+                  <ul className="space-y-6">
+                    {[
+                      "Laptops or phones with activated OS/Software",
+                      "Appliances showing signs of installation",
+                      "Items missing original box or serial stickers",
+                      "Physical damage caused by improper voltage",
+                    ].map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-4 text-sm font-medium text-muted-foreground"
+                      >
+                        <div className="h-1.5 w-1.5 rounded-full bg-zinc-300 mt-1.5 shrink-0" />
+                        {item}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Refund Policy */}
-          <section className="container-custom py-12">
-            <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl font-bold mb-8 text-center">Refund Policy</h2>
-              
-              <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 mb-8">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-1">Important</h4>
-                    <p className="text-sm text-amber-700 dark:text-amber-300">
-                      Refunds are only processed after we receive and inspect the returned item. 
-                      Please ensure the item is in its original condition.
-                    </p>
+          {/* Detailed Policy Text */}
+          <section className="container-custom py-24 px-6 max-w-4xl mx-auto">
+            <div className="bg-zinc-950 p-8 md:p-12 mb-16">
+              <div className="flex items-start gap-4">
+                <AlertCircle className="h-6 w-6 text-primary shrink-0" />
+                <div>
+                  <h4 className="font-black text-white uppercase tracking-widest text-xs mb-2">
+                    Protocol Note
+                  </h4>
+                  <p className="text-sm text-zinc-400 font-medium leading-relaxed">
+                    All technical returns require an inspection report from our
+                    service engineers. If a hardware defect is found, 100% of
+                    the cost (including shipping) is refunded. For "Change of
+                    Mind" returns, a 15% restocking fee may apply to
+                    electronics.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-16">
+              <div>
+                <h3 className="font-black uppercase tracking-widest text-xs mb-6 text-primary">
+                  Refund Timelines
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between border-b border-border pb-2">
+                    <span className="text-sm font-bold uppercase tracking-tighter">
+                      Digital Wallets
+                    </span>
+                    <span className="text-sm font-medium text-muted-foreground underline decoration-primary underline-offset-4">
+                      48 Hours
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-b border-border pb-2">
+                    <span className="text-sm font-bold uppercase tracking-tighter">
+                      Credit Cards
+                    </span>
+                    <span className="text-sm font-medium text-muted-foreground underline decoration-primary underline-offset-4">
+                      5-7 Days
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-b border-border pb-2">
+                    <span className="text-sm font-bold uppercase tracking-tighter">
+                      Bank Transfer
+                    </span>
+                    <span className="text-sm font-medium text-muted-foreground underline decoration-primary underline-offset-4">
+                      3-5 Days
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="prose prose-gray dark:prose-invert">
-                <h3>Refund Timeline</h3>
-                <ul>
-                  <li><strong>eSewa/Khalti:</strong> 3-5 business days</li>
-                  <li><strong>Bank Transfer:</strong> 5-7 business days</li>
-                  <li><strong>Cash on Delivery:</strong> 7-10 business days (via bank transfer)</li>
-                </ul>
-
-                <h3>Partial Refunds</h3>
-                <p>
-                  Partial refunds may be issued in cases where:
+              <div className="space-y-6">
+                <h3 className="font-black uppercase tracking-widest text-xs mb-6 text-primary">
+                  Inquiry Channels
+                </h3>
+                <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                  To start a claim, please have your Serial Number and Digital
+                  Invoice ready.
                 </p>
-                <ul>
-                  <li>Item shows signs of use or damage</li>
-                  <li>Missing original accessories or parts</li>
-                  <li>Missing original packaging</li>
-                </ul>
-
-                <h3>Shipping Costs</h3>
-                <p>
-                  Return shipping costs are borne by the customer unless the return is due to 
-                  our error (defective product, wrong item shipped, etc.).
-                </p>
-
-                <h3>Contact Us</h3>
-                <p>
-                  For return requests, please email us at <a href="mailto:returns@supplysewa.com">returns@supplysewa.com</a> 
-                  or call <a href="tel:+977-1-4123456">+977-1-4123456</a>.
-                </p>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href="mailto:support@justclick.com"
+                    className="text-lg font-black hover:text-primary transition-colors uppercase tracking-tighter"
+                  >
+                    support@justclick.com
+                  </a>
+                  <a
+                    href="tel:+97714123456"
+                    className="text-lg font-black hover:text-primary transition-colors uppercase tracking-tighter"
+                  >
+                    +977-1-4123456
+                  </a>
+                </div>
               </div>
             </div>
           </section>
         </main>
+
         <Footer />
       </div>
     </>

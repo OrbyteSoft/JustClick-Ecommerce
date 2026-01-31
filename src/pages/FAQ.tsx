@@ -1,161 +1,161 @@
 import { Helmet } from "react-helmet-async";
-import { HelpCircle, ChevronDown } from "lucide-react";
+import {
+  Zap,
+  ShieldCheck,
+  Truck,
+  CreditCard,
+  User,
+  HelpCircle,
+} from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const FAQ = () => {
   const faqCategories = [
     {
-      title: "Orders & Shipping",
+      title: "Logistic & Delivery",
       id: "orders",
+      icon: Truck,
       faqs: [
         {
-          question: "How do I place an order?",
-          answer: "Browse products, add items to cart, proceed to checkout, enter shipping details, select payment method, and confirm your order."
+          question: "How long does delivery take for major appliances?",
+          answer:
+            "Within Kathmandu Valley, large appliances are delivered via our dedicated logistics team within 24-48 hours. Gadgets and smaller electronics are dispatched via express courier and usually arrive within 24 hours.",
         },
         {
-          question: "How can I track my order?",
-          answer: "Visit our Track Order page and enter your order number to see real-time status updates."
+          question: "Can I track my technician's arrival?",
+          answer:
+            "Yes. Once your appliance is out for delivery, you will receive a tracking link via SMS that includes the contact details of both the driver and the installation technician.",
         },
         {
-          question: "What are the delivery charges?",
-          answer: "Delivery charges vary by location: Rs. 100 for Kathmandu Valley, Rs. 150 for major cities, and Rs. 200-300 for other areas. Free shipping available on orders above Rs. 5,000."
+          question: "What are the shipping tiers?",
+          answer:
+            "Standard shipping is NPR 150. We offer 'Premium White Glove' delivery for appliances (NPR 500) which includes unboxing and basic setup.",
         },
-        {
-          question: "Can I change my delivery address?",
-          answer: "Yes, you can change the address before the order is shipped. Contact our support team with your order number."
-        },
-      ]
+      ],
     },
     {
-      title: "Payment",
+      title: "Payments & EMI",
       id: "payment",
+      icon: CreditCard,
       faqs: [
         {
-          question: "What payment methods do you accept?",
-          answer: "We accept eSewa, Khalti, bank transfers, and Cash on Delivery (COD)."
+          question: "Do you offer 0% EMI?",
+          answer:
+            "Yes, we partner with leading banks to provide 0% EMI for 6 and 12-month tenures on all purchases exceeding NPR 40,000.",
         },
         {
-          question: "Is online payment secure?",
-          answer: "Yes, all transactions are encrypted and processed through secure payment gateways. We never store your card details."
+          question: "What digital wallets are supported?",
+          answer:
+            "We support direct integration with eSewa, Khalti, and FonePay. For high-value transactions, we recommend bank transfers or FonePay for instant verification.",
         },
-        {
-          question: "Can I pay in installments?",
-          answer: "Currently, we don't offer installment payments. However, you can use any EMI services offered by your bank."
-        },
-        {
-          question: "What if my payment fails?",
-          answer: "If payment fails, try again or use a different payment method. If money was deducted, it will be refunded within 5-7 business days."
-        },
-      ]
+      ],
     },
     {
-      title: "Account",
-      id: "account",
-      faqs: [
-        {
-          question: "How do I create an account?",
-          answer: "Click 'Sign Up' on the login page, enter your email and password, and verify your account through the confirmation email."
-        },
-        {
-          question: "I forgot my password. What should I do?",
-          answer: "Click 'Forgot Password' on the login page, enter your email, and follow the instructions sent to reset your password."
-        },
-        {
-          question: "How do I update my profile information?",
-          answer: "Log in to your account, go to Profile Settings, and update your information as needed."
-        },
-        {
-          question: "How do I delete my account?",
-          answer: "Contact our support team at support@supplysewa.com with your account deletion request."
-        },
-      ]
-    },
-    {
-      title: "Products",
-      id: "products",
-      faqs: [
-        {
-          question: "Are all products genuine?",
-          answer: "Yes, we only work with verified sellers who provide authentic products. All electronics come with manufacturer warranty."
-        },
-        {
-          question: "What if a product is out of stock?",
-          answer: "You can click 'Notify Me' on the product page to receive an email when it's back in stock."
-        },
-        {
-          question: "Do products come with warranty?",
-          answer: "Warranty varies by product and seller. Check the product description for warranty information."
-        },
-        {
-          question: "Can I see products in person before buying?",
-          answer: "Some sellers have physical stores. Check the seller information on the product page for details."
-        },
-      ]
-    },
-    {
-      title: "Returns & Refunds",
+      title: "Technical Returns",
       id: "returns",
+      icon: ShieldCheck,
       faqs: [
         {
-          question: "What is your return policy?",
-          answer: "We offer 7-day returns for eligible products. Items must be unused and in original packaging."
+          question: "What is the policy for 'Dead on Arrival' (DOA) units?",
+          answer:
+            "If your gadget doesn't power on out of the box, we provide an immediate 1-to-1 replacement within 7 days of purchase, provided the original packaging is kept.",
         },
         {
-          question: "How do I initiate a return?",
-          answer: "Contact our support team with your order number and reason for return. We'll guide you through the process."
+          question: "Can I return a laptop if I've opened the software seal?",
+          answer:
+            "To ensure the security and authenticity of our tech, laptops with broken software seals or activated OS licenses are not eligible for return unless a hardware defect is verified by the service center.",
+        },
+      ],
+    },
+    {
+      title: "Account & Warranty",
+      id: "account",
+      icon: User,
+      faqs: [
+        {
+          question: "Where can I find my digital warranty card?",
+          answer:
+            "Just Click is paperless. Your digital invoice and warranty details are stored under 'My Orders' in your profile. Most brands we carry also support 'Serial Number' based global warranty.",
         },
         {
-          question: "How long does a refund take?",
-          answer: "Refunds are processed within 5-7 business days after we receive and inspect the returned item."
+          question: "How do I update my GST/VAT details for business orders?",
+          answer:
+            "You can add your business credentials under Profile Settings. These will be automatically applied to all your future tax invoices.",
         },
-        {
-          question: "Who pays for return shipping?",
-          answer: "If the return is due to our error, we cover shipping. For other reasons, the customer bears the shipping cost."
-        },
-      ]
+      ],
     },
   ];
 
   return (
     <>
       <Helmet>
-        <title>FAQs - Supply Sewa</title>
-        <meta name="description" content="Find answers to frequently asked questions about Supply Sewa" />
+        <title>Tech Support & FAQ | Just Click</title>
       </Helmet>
 
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background selection:bg-primary selection:text-white">
         <Header />
+
         <main className="flex-1">
-          {/* Hero */}
-          <section className="gradient-hero py-16">
-            <div className="container-custom text-center text-primary-foreground">
-              <HelpCircle className="h-12 w-12 mx-auto mb-4" />
-              <h1 className="text-4xl font-bold mb-4">Frequently Asked Questions</h1>
-              <p className="text-lg text-primary-foreground/80">
-                Find quick answers to common questions
-              </p>
+          {/* Hero Header */}
+          <section className="bg-zinc-950 py-20 border-b border-border">
+            <div className="container-custom max-w-4xl px-6">
+              <div className="flex items-center gap-2 mb-4 text-gray-500">
+                <Zap className="h-5 w-5 fill-current" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                  Knowledge Base
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase">
+                Frequently Asked <br />
+                <span className="text-gray-600 text-outline-sm">
+                  Questions.
+                </span>
+              </h1>
             </div>
           </section>
 
-          {/* FAQ Categories */}
-          <section className="container-custom py-12">
-            <div className="max-w-3xl mx-auto space-y-12">
+          {/* FAQ Sections */}
+          <section className="container-custom max-w-4xl py-20 px-6">
+            <div className="space-y-24">
               {faqCategories.map((category) => (
-                <div key={category.id} id={category.id}>
-                  <h2 className="text-2xl font-bold mb-6">{category.title}</h2>
-                  <Accordion type="single" collapsible className="space-y-4">
+                <div
+                  key={category.id}
+                  id={category.id}
+                  className="scroll-mt-24"
+                >
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
+                      <category.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h2 className="text-xl font-black uppercase tracking-widest">
+                      {category.title}
+                    </h2>
+                  </div>
+
+                  <Accordion
+                    type="single"
+                    collapsible
+                    className="space-y-px bg-border border-y border-border"
+                  >
                     {category.faqs.map((faq, idx) => (
                       <AccordionItem
                         key={idx}
                         value={`${category.id}-${idx}`}
-                        className="bg-card border border-border rounded-xl px-6"
+                        className="bg-background border-none px-2 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
                       >
-                        <AccordionTrigger className="hover:no-underline py-4">
-                          <span className="text-left font-medium">{faq.question}</span>
+                        <AccordionTrigger className="hover:no-underline py-6 text-left font-bold text-base uppercase tracking-tight group">
+                          <span className="group-hover:text-primary transition-colors">
+                            {faq.question}
+                          </span>
                         </AccordionTrigger>
-                        <AccordionContent className="pb-4 text-muted-foreground">
+                        <AccordionContent className="pb-6 text-muted-foreground leading-relaxed font-medium text-sm md:text-base">
                           {faq.answer}
                         </AccordionContent>
                       </AccordionItem>
@@ -166,22 +166,27 @@ const FAQ = () => {
             </div>
           </section>
 
-          {/* Contact CTA */}
-          <section className="bg-muted py-12">
-            <div className="container-custom text-center">
-              <h2 className="text-2xl font-bold mb-4">Still have questions?</h2>
-              <p className="text-muted-foreground mb-6">
-                Can't find what you're looking for? Our support team is here to help.
+          {/* Support CTA */}
+          <section className="border-t border-border py-24 bg-zinc-50/50 dark:bg-transparent">
+            <div className="container-custom text-center px-6">
+              <HelpCircle className="h-10 w-10 mx-auto text-primary mb-6" />
+              <h2 className="text-3xl font-black uppercase tracking-tighter mb-4">
+                Unresolved Inquiry?
+              </h2>
+              <p className="text-muted-foreground mb-10 max-w-md mx-auto font-medium">
+                Our technical support engineers are available for live
+                consultation if your question isn't covered here.
               </p>
               <a
                 href="/contact"
-                className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center h-14 px-10 bg-primary text-white font-black uppercase tracking-widest transition-all hover:translate-x-1 active:scale-95"
               >
-                Contact Support
+                Connect with an Expert
               </a>
             </div>
           </section>
         </main>
+
         <Footer />
       </div>
     </>

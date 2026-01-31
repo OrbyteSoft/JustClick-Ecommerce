@@ -1,17 +1,16 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   ShoppingCart,
   Heart,
-  User,
   Menu,
   X,
   ChevronDown,
   LogOut,
   Settings,
   Package,
-  Shield,
-  Search,
+  ChevronRight,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { categories } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
@@ -33,12 +31,22 @@ import SearchBar from "@/components/search/SearchBar";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
-  const { user, profile, loading, signOut, isAdmin, isSeller } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const cartItemsCount = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
 
   const handleSignOut = async () => {
     await signOut();
@@ -50,168 +58,171 @@ const Header = () => {
     if (profile?.first_name && profile?.last_name) {
       return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
     }
-    if (user?.email) {
-      return user.email[0].toUpperCase();
-    }
-    return "U";
-  };
-
-  const getDisplayName = () => {
-    if (profile?.first_name) {
-      return profile.first_name;
-    }
-    if (user?.email) {
-      return user.email.split("@")[0];
-    }
-    return "User";
+    return user?.email?.[0].toUpperCase() || "U";
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full">
-      {/* Main header - Flipkart style */}
-      <div className="gradient-primary">
-        <div className="container-custom py-3">
-          <div className="flex items-center justify-between gap-4">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 shrink-0">
-              <div className="bg-white/10 backdrop-blur rounded-lg px-3 py-1.5">
-                <span className="text-white font-bold text-xl tracking-tight">Supply<span className="text-accent">Sewa</span></span>
-              </div>
-            </Link>
-
-            {/* Search bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-2xl">
-              <SearchBar />
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-1 sm:gap-3">
-              <Link 
-                to="/wishlist" 
-                className="relative hidden sm:flex items-center gap-1.5 text-white/90 hover:text-white transition-colors px-3 py-2"
-              >
-                <Heart className="h-5 w-5" />
-                <span className="text-sm font-medium hidden lg:inline">Wishlist</span>
-                {wishlistItems.length > 0 && (
-                  <Badge className="absolute -top-0.5 left-5 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground border-0">
-                    {wishlistItems.length}
-                  </Badge>
-                )}
+    <>
+      <header
+        className={`sticky top-0 z-50 w-full transition-all duration-500 ${
+          scrolled
+            ? "bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-100 dark:border-zinc-800 py-3"
+            : "bg-white dark:bg-zinc-950 py-4"
+        }`}
+      >
+        <div className="container-custom">
+          <div className="grid grid-cols-2 lg:grid-cols-[auto_1fr_auto] items-center gap-6 xl:gap-12">
+            {/* 1. Brand & Desktop Nav */}
+            <div className="flex items-center gap-8">
+              <Link to="/" className="group shrink-0">
+                <span className="text-xl md:text-2xl font-light tracking-tighter uppercase text-zinc-900 dark:text-white">
+                  Just<span className="font-black"> Click</span>
+                </span>
               </Link>
 
-              <Link 
-                to="/cart" 
-                className="relative flex items-center gap-1.5 text-white/90 hover:text-white transition-colors px-3 py-2"
+              <nav className="hidden xl:flex items-center gap-6">
+                <Link
+                  to="/products"
+                  className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors whitespace-nowrap"
+                >
+                  Shop All
+                </Link>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-1 outline-none whitespace-nowrap group">
+                    Categories{" "}
+                    <ChevronDown className="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-64 mt-4 p-1.5 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-zinc-100 dark:border-zinc-800 shadow-xl">
+                    {categories.map((cat) => (
+                      <DropdownMenuItem
+                        key={cat.id}
+                        asChild
+                        className="focus:bg-zinc-50 dark:focus:bg-zinc-900 rounded-md cursor-pointer"
+                      >
+                        <Link
+                          to={`/products?category=${cat.slug}`}
+                          className="text-[10px] uppercase tracking-[0.15em] font-light py-3 px-3 text-zinc-500 dark:text-zinc-400 block"
+                        >
+                          {cat.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Link
+                  to="/hot-deals"
+                  className="text-[10px] font-medium uppercase tracking-[0.2em] text-red-400 hover:text-red-600 transition-colors whitespace-nowrap"
+                >
+                  Flash Deals
+                </Link>
+              </nav>
+            </div>
+
+            {/* 2. Search Section */}
+            <div className="hidden lg:flex justify-center w-full px-8">
+              <div className="relative group w-full max-w-[680px]">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 rounded-full blur-md opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+
+                <div className="relative flex items-center w-full bg-secondary/40 dark:bg-zinc-900/40 backdrop-blur-md rounded-full border border-border/50 shadow-sm transition-all duration-300 group-focus-within:bg-background group-focus-within:border-primary/30 group-focus-within:shadow-lg group-focus-within:shadow-primary/5">
+                  <SearchBar className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none hover:shadow-none" />
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Action Icons */}
+            <div className="flex items-center justify-end gap-1 md:gap-2">
+              <Link
+                to="/wishlist"
+                className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
-                <ShoppingCart className="h-5 w-5" />
-                <span className="text-sm font-medium hidden lg:inline">Cart</span>
+                <Heart
+                  className={`h-5 w-5 stroke-[1.2px] ${wishlistItems.length > 0 ? "fill-red-500 stroke-red-500" : ""}`}
+                />
+              </Link>
+
+              <Link
+                to="/cart"
+                className="relative p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
+                <ShoppingCart className="h-5 w-5 stroke-[1.2px]" />
                 {cartItemsCount > 0 && (
-                  <Badge className="absolute -top-0.5 left-5 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground border-0">
+                  <Badge className="absolute top-1 right-1 h-4 min-w-[1rem] flex items-center justify-center p-0.5 text-[8px] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-none font-bold">
                     {cartItemsCount}
                   </Badge>
                 )}
               </Link>
 
-              {/* User Account Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 h-auto py-2 px-3 text-white/90 hover:text-white hover:bg-white/10">
-                    {loading ? (
-                      <div className="h-7 w-7 rounded-full bg-white/20 animate-pulse" />
-                    ) : user ? (
-                      <Avatar className="h-7 w-7 border-2 border-white/30">
-                        <AvatarImage src={profile?.avatar_url || undefined} alt={getDisplayName()} />
-                        <AvatarFallback className="bg-accent text-accent-foreground text-xs font-bold">
-                          {getInitials()}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <User className="h-5 w-5" />
-                    )}
-                    <span className="text-sm font-medium hidden lg:inline">
-                      {loading ? "..." : user ? getDisplayName() : "Login"}
-                    </span>
-                    <ChevronDown className="h-3 w-3 hidden lg:block" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                  >
+                    <Avatar className="h-7 w-7 border border-zinc-100 dark:border-zinc-800">
+                      <AvatarImage src={profile?.avatar_url} />
+                      <AvatarFallback className="bg-zinc-900 text-white text-[10px] font-bold">
+                        {getInitials()}
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+
+                <DropdownMenuContent
+                  align="end"
+                  className="w-64 mt-4 p-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-xl overflow-hidden"
+                >
                   {user ? (
                     <>
-                      <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">
-                            {profile?.first_name && profile?.last_name 
-                              ? `${profile.first_name} ${profile.last_name}`
-                              : getDisplayName()}
-                          </p>
-                          <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                          </p>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to="/account/orders" className="flex items-center gap-2">
-                          <Package className="h-4 w-4" />
-                          My Orders
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/account/profile" className="flex items-center gap-2">
-                          <Settings className="h-4 w-4" />
-                          My Profile
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/wishlist" className="flex items-center gap-2">
-                          <Heart className="h-4 w-4" />
-                          My Wishlist
-                        </Link>
-                      </DropdownMenuItem>
-                      {isAdmin() && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link to="/admin" className="flex items-center gap-2 text-primary font-medium">
-                              <Shield className="h-4 w-4" />
-                              Admin Dashboard
-                            </Link>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      {isSeller() && !isAdmin() && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link to="/seller/dashboard" className="flex items-center gap-2 text-primary">
-                              <Package className="h-4 w-4" />
-                              Seller Dashboard
-                            </Link>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={handleSignOut}
-                        className="flex items-center gap-2 text-destructive focus:text-destructive"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Sign Out
-                      </DropdownMenuItem>
+                      <div className="bg-zinc-50/50 dark:bg-zinc-900/50 p-4 border-b border-zinc-100 dark:border-zinc-800">
+                        <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-zinc-400 mb-1">
+                          Account Access
+                        </p>
+                        <p className="text-xs font-light text-zinc-900 dark:text-white truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      <div className="p-1.5">
+                        <DropdownMenuItem
+                          onClick={() => navigate("/account/orders")}
+                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400 focus:bg-zinc-50 dark:focus:bg-zinc-900 rounded-md transition-all"
+                        >
+                          <Package className="h-3.5 w-3.5 opacity-30" /> My
+                          Orders
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => navigate("/account/profile")}
+                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400 focus:bg-zinc-50 dark:focus:bg-zinc-900 rounded-md transition-all"
+                        >
+                          <Settings className="h-3.5 w-3.5 opacity-30" />{" "}
+                          Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="my-1.5 bg-zinc-100 dark:bg-zinc-800" />
+                        <DropdownMenuItem
+                          onClick={handleSignOut}
+                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-red-400 focus:bg-red-50 dark:focus:bg-red-950/20 rounded-md"
+                        >
+                          <LogOut className="h-3.5 w-3.5 opacity-60" /> Sign Out
+                        </DropdownMenuItem>
+                      </div>
                     </>
                   ) : (
-                    <>
-                      <DropdownMenuItem asChild>
-                        <Link to="/auth" className="font-medium">Login / Sign Up</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to="/track-order">Track Order</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/help">Help & Support</Link>
-                      </DropdownMenuItem>
-                    </>
+                    <div className="p-6 text-center">
+                      <div className="h-10 w-10 bg-zinc-50 dark:bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <User className="h-5 w-5 text-zinc-300" />
+                      </div>
+                      <p className="text-[10px] font-light uppercase tracking-[0.2em] text-zinc-400 mb-4">
+                        Welcome to SupplySewa
+                      </p>
+                      <Button
+                        onClick={() => navigate("/auth")}
+                        className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-none py-6 text-[10px] font-medium uppercase tracking-[0.2em] hover:opacity-90 transition-opacity shadow-none"
+                      >
+                        Login / Join
+                      </Button>
+                    </div>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -219,99 +230,91 @@ const Header = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden text-white hover:bg-white/10"
+                className="lg:hidden text-zinc-400"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
-                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </Button>
             </div>
           </div>
 
-          {/* Mobile search */}
-          <div className="md:hidden mt-3">
-            <SearchBar isMobile />
+          {/* Mobile Search Row */}
+          <div className="mt-4 block lg:hidden">
+            <div className="w-full bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800">
+              <SearchBar />
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Category navigation - Desktop */}
-      <nav className="hidden md:block bg-card border-b border-border shadow-sm">
-        <div className="container-custom">
-          <ul className="flex items-center gap-1 py-2 overflow-x-auto">
-            <li>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2 font-semibold text-foreground hover:text-primary hover:bg-primary/5">
-                    <Menu className="h-4 w-4" />
-                    All Categories
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64">
-                  {categories.map((category) => (
-                    <DropdownMenuItem key={category.id} asChild>
-                      <Link to={`/products?category=${category.slug}`} className="flex items-center justify-between">
-                        {category.name}
-                        <Badge variant="secondary" className="ml-auto text-xs">
-                          {category.productCount}
-                        </Badge>
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </li>
-            {categories.slice(0, 6).map((category) => (
-              <li key={category.id}>
-                <Link to={`/products?category=${category.slug}`}>
-                  <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5">
-                    {category.name}
-                  </Button>
-                </Link>
-              </li>
-            ))}
-            <li>
-              <Link to="/hot-deals">
-                <Button variant="ghost" className="text-sm font-semibold text-destructive hover:bg-destructive/5">
-                  🔥 Deals
-                </Button>
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </nav>
-
-      {/* Mobile menu */}
+      {/* Mobile Menu List View */}
       {isMenuOpen && (
-        <div className="md:hidden bg-card border-b border-border animate-slide-down shadow-lg">
-          <nav className="container-custom py-4">
-            <ul className="space-y-1">
-              {categories.map((category) => (
-                <li key={category.id}>
-                  <Link
-                    to={`/products?category=${category.slug}`}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span className="font-medium">{category.name}</span>
-                    <Badge variant="secondary">{category.productCount}</Badge>
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <Link
-                  to="/hot-deals"
-                  className="flex items-center p-3 rounded-lg bg-destructive/10 text-destructive font-semibold"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  🔥 Hot Deals
-                </Link>
-              </li>
-            </ul>
-          </nav>
+        <div className="fixed inset-0 z-40 bg-white dark:bg-zinc-950 lg:hidden animate-in slide-in-from-bottom-5 duration-300 pt-24">
+          <div className="container-custom h-full overflow-y-auto pb-20">
+            <div className="space-y-10">
+              {/* Navigation Links */}
+              <div>
+                <h3 className="text-[9px] font-medium uppercase tracking-[0.3em] text-zinc-300 dark:text-zinc-600 mb-6 px-2">
+                  Main Menu
+                </h3>
+                <div className="flex flex-col">
+                  {[
+                    { name: "Home", path: "/" },
+                    { name: "Shop All", path: "/products" },
+                    {
+                      name: "Flash Deals",
+                      path: "/hot-deals",
+                      highlight: true,
+                    },
+                    { name: "New Arrivals", path: "/products?sort=newest" },
+                  ].map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="group flex items-center justify-between py-5 px-2 border-b border-zinc-50 dark:border-zinc-900"
+                    >
+                      <span
+                        className={`text-[12px] font-light uppercase tracking-[0.15em] ${item.highlight ? "text-red-400" : "text-zinc-500 dark:text-zinc-400"}`}
+                      >
+                        {item.name}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-zinc-200 dark:text-zinc-800" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Links */}
+              <div>
+                <h3 className="text-[9px] font-medium uppercase tracking-[0.3em] text-zinc-300 dark:text-zinc-600 mb-6 px-2">
+                  Categories
+                </h3>
+                <div className="flex flex-col">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      to={`/products?category=${cat.slug}`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="group flex items-center justify-between py-4 px-2 border-b border-zinc-50 dark:border-zinc-900"
+                    >
+                      <span className="text-[12px] font-light uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400">
+                        {cat.name}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-zinc-100 dark:text-zinc-800" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
-    </header>
+    </>
   );
 };
 

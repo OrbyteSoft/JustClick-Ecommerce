@@ -1,158 +1,130 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ArrowRight, Zap, Truck, Shield, Award } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  Zap,
+  Truck,
+  Shield,
+  Award,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { banners } from "@/data/products";
 
 const highlights = [
-  { icon: Zap, text: "Flash Deals" },
-  { icon: Truck, text: "Free Delivery" },
-  { icon: Shield, text: "Genuine Products" },
-  { icon: Award, text: "Top Brands" },
+  { icon: Zap, text: "Flash Deals", color: "text-amber-500" },
+  { icon: Truck, text: "Free Delivery", color: "text-blue-500" },
+  { icon: Shield, text: "Genuine Only", color: "text-green-500" },
+  { icon: Award, text: "Top Brands", color: "text-purple-500" },
 ];
 
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % banners.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % banners.length);
-  };
+  }, []);
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
   };
 
+  useEffect(() => {
+    const timer = setInterval(nextSlide, 5000);
+    return () => clearInterval(timer);
+  }, [nextSlide]);
+
   return (
-    <section className="bg-muted">
-      <div className="container-custom py-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          {/* Main Banner */}
-          <div className="lg:col-span-3 relative overflow-hidden rounded-lg">
-            <div className="relative h-[280px] md:h-[360px]">
-              {banners.map((banner, index) => (
+    <section className="bg-white dark:bg-slate-950 transition-colors">
+      <div className="container mx-auto px-4 py-4 md:py-6">
+        <div className="relative group overflow-hidden rounded-none shadow-xl bg-slate-100">
+          {/* Main Slider */}
+          <div className="relative h-[320px] md:h-[450px] lg:h-[500px] w-full">
+            {banners.map((banner, index) => (
+              <div
+                key={banner.id}
+                className={`absolute inset-0 transition-all duration-700 ease-out ${
+                  index === currentSlide
+                    ? "opacity-100 scale-100 z-10"
+                    : "opacity-0 scale-105 z-0"
+                }`}
+              >
+                {/* Background Image with Overlay */}
                 <div
-                  key={banner.id}
-                  className={`absolute inset-0 transition-all duration-500 ease-in-out ${
-                    index === currentSlide
-                      ? "opacity-100 translate-x-0"
-                      : index < currentSlide
-                      ? "opacity-0 -translate-x-full"
-                      : "opacity-0 translate-x-full"
-                  }`}
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-[5000ms] ease-linear"
+                  style={{
+                    backgroundImage: `url(${banner.image})`,
+                    transform:
+                      index === currentSlide ? "scale(1.1)" : "scale(1)",
+                  }}
                 >
                   <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${banner.image})` }}
-                  >
-                    <div className={`absolute inset-0 bg-gradient-to-r ${banner.gradient} opacity-90`} />
-                  </div>
-                  <div className="relative h-full flex items-center px-8 md:px-12">
-                    <div className="max-w-lg text-white animate-fade-in">
-                      <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-sm font-medium mb-3">
-                        {banner.subtitle}
-                      </span>
-                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 leading-tight">
-                        {banner.title}
-                      </h2>
-                      <p className="text-base md:text-lg mb-6 text-white/90 line-clamp-2">
-                        {banner.description}
-                      </p>
-                      <Link to={banner.link}>
-                        <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold group">
-                          {banner.cta}
-                          <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
-                        </Button>
-                      </Link>
+                    className={`absolute inset-0 bg-gradient-to-r ${banner.gradient} via-black/40 to-transparent`}
+                  />
+                </div>
+
+                {/* Content */}
+                <div className="relative h-full flex items-center px-6 md:px-16">
+                  <div className="max-w-xl text-white">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs md:text-sm font-semibold mb-4 animate-in fade-in slide-in-from-bottom-3">
+                      <Zap className="h-3 w-3 fill-current" />
+                      {banner.subtitle}
+                    </div>
+                    <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-4 leading-tight drop-shadow-lg">
+                      {banner.title}
+                    </h2>
+                    <p className="text-sm md:text-lg mb-8 text-white/80 line-clamp-2 max-w-md">
+                      {banner.description}
+                    </p>
+                    <div className="flex flex-wrap gap-4">
+                      <Button
+                        asChild
+                        size="lg"
+                        className="rounded-full px-8 bg-white text-black hover:bg-slate-100 hover:scale-105 transition-all shadow-lg"
+                      >
+                        <Link
+                          to={banner.link}
+                          className="flex items-center gap-2"
+                        >
+                          {banner.cta} <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 </div>
-              ))}
-
-              {/* Navigation arrows */}
-              <button
-                onClick={prevSlide}
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors backdrop-blur-sm"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={nextSlide}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors backdrop-blur-sm"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-
-              {/* Dots indicator */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {banners.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentSlide(index)}
-                    className={`h-2 rounded-full transition-all ${
-                      index === currentSlide
-                        ? "bg-white w-6"
-                        : "bg-white/40 w-2 hover:bg-white/60"
-                    }`}
-                  />
-                ))}
               </div>
-            </div>
+            ))}
           </div>
 
-          {/* Side Cards */}
-          <div className="hidden lg:flex flex-col gap-4">
-            <Link 
-              to="/products?new=true" 
-              className="flex-1 relative overflow-hidden rounded-lg bg-gradient-to-br from-accent to-amber-500 p-5 text-secondary group"
-            >
-              <div className="relative z-10">
-                <span className="text-xs font-semibold uppercase tracking-wide opacity-80">New Arrivals</span>
-                <h3 className="text-xl font-bold mt-1 mb-2">Latest Gadgets</h3>
-                <span className="inline-flex items-center text-sm font-medium group-hover:underline">
-                  Shop Now
-                  <ArrowRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
-                </span>
-              </div>
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/20 rounded-full" />
-            </Link>
-            
-            <Link 
-              to="/hot-deals" 
-              className="flex-1 relative overflow-hidden rounded-lg bg-gradient-to-br from-destructive to-red-700 p-5 text-white group"
-            >
-              <div className="relative z-10">
-                <span className="text-xs font-semibold uppercase tracking-wide opacity-80">Limited Time</span>
-                <h3 className="text-xl font-bold mt-1 mb-2">Flash Sale 🔥</h3>
-                <span className="inline-flex items-center text-sm font-medium group-hover:underline">
-                  View Deals
-                  <ArrowRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
-                </span>
-              </div>
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full" />
-            </Link>
-          </div>
-        </div>
+          {/* Navigation Controls - Hidden on Mobile, Visible on Hover on Desktop */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm hidden md:block"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm hidden md:block"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
 
-        {/* Highlights Bar */}
-        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-          {highlights.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 bg-card rounded-lg p-3 border border-border"
-            >
-              <div className="p-2 rounded-lg bg-primary/10">
-                <item.icon className="h-5 w-5 text-primary" />
-              </div>
-              <span className="font-medium text-sm text-foreground">{item.text}</span>
-            </div>
-          ))}
+          {/* Indicators */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`transition-all duration-300 rounded-full ${
+                  index === currentSlide
+                    ? "w-8 bg-white h-2"
+                    : "w-2 bg-white/50 h-2 hover:bg-white/80"
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>

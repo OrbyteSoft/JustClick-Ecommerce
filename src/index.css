@@ -2,109 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 
 @layer base {
   :root {
-    /* Flipkart-inspired Blue & Yellow theme */
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
+    /* Minimalist Technical Theme (Light Mode) */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 240 10% 3.9%;
 
-    /* Primary: Flipkart Blue */
-    --primary: 214 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary: Deep Zinc (Industrial Black) */
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
 
-    /* Secondary: Dark Navy */
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary: Light Zinc Grays */
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    /* Accent: Flipkart Yellow */
-    --accent: 45 100% 51%;
-    --accent-foreground: 222 47% 11%;
+    /* Accent: Subtle Silver/Muted Slate */
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
+    --success: 142 72% 29%;
+    --success-foreground: 0 0% 98%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 214 100% 50%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
 
-    --radius: 0.5rem;
+    --radius: 0px; /* Force sharp edges for minimal design */
 
-    /* Custom design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(214 100% 50%) 0%, hsl(214 100% 40%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(35 100% 50%) 100%);
-    --gradient-dark: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 47% 18%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(214 100% 50%) 0%, hsl(200 100% 45%) 100%);
-    
-    --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.1), 0 2px 4px -2px hsl(222 47% 11% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.1), 0 8px 10px -6px hsl(222 47% 11% / 0.1);
-    --shadow-glow: 0 0 30px hsl(214 100% 50% / 0.3);
-
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 214 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 214 100% 50%;
+    /* Custom Design Tokens - Gradients removed for flat minimal look */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 20px rgba(0, 0, 0, 0.05);
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* Terminal Theme (Dark Mode) */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 214 100% 55%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary: Pure White for Dark Mode */
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
 
-    --secondary: 214 32% 25%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --accent: 45 100% 51%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --destructive: 0 63% 45%;
-    --destructive-foreground: 210 40% 98%;
-
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
-
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-    --ring: 214 100% 55%;
-
-    --sidebar-background: 222 47% 9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 214 100% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 20%;
-    --sidebar-ring: 214 100% 55%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
   }
 }
 
@@ -114,138 +85,48 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-
-  html {
-    scroll-behavior: smooth;
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter", system-ui, sans-serif;
   }
 }
 
 @layer components {
+  /* Minimal UI Components */
   .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-6 lg:px-12;
   }
 
-  .gradient-primary {
-    background: var(--gradient-primary);
+  /* Technical Grid Background Utility */
+  .bg-grid {
+    background-size: 40px 40px;
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.3) 1px, transparent 1px);
   }
 
-  .gradient-accent {
-    background: var(--gradient-accent);
-  }
-
-  .gradient-hero {
-    background: var(--gradient-hero);
-  }
-
-  .gradient-dark {
-    background: var(--gradient-dark);
-  }
-
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
-  }
-
-  .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background: var(--gradient-primary);
-  }
-
-  /* Flipkart-style card hover */
-  .product-card {
-    @apply bg-card rounded-lg border border-border overflow-hidden transition-all duration-200;
-  }
-  
-  .product-card:hover {
-    @apply shadow-lg border-primary/20;
-    transform: translateY(-2px);
+  /* Minimal Input Style */
+  .input-minimal {
+    @apply rounded-none border-x-0 border-t-0 border-b bg-transparent focus-visible:ring-0 px-0;
   }
 }
 
 @layer utilities {
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
+  .animate-terminal-blink {
+    animation: blink 1s step-end infinite;
   }
 
-  .animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.4s ease-out;
-  }
-
-  .animate-slide-down {
-    animation: slideDown 0.3s ease-out;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.3s ease-out;
-  }
-
-  .animate-pulse-glow {
-    animation: pulseGlow 2s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
+  @keyframes blink {
+    from,
+    to {
+      opacity: 1;
     }
     50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  @keyframes fadeIn {
-    from {
       opacity: 0;
     }
-    to {
-      opacity: 1;
-    }
   }
 
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes pulseGlow {
-    0%, 100% {
-      box-shadow: 0 0 20px hsl(214 100% 50% / 0.3);
-    }
-    50% {
-      box-shadow: 0 0 40px hsl(214 100% 50% / 0.5);
-    }
+  /* Remove rounded corners globally for the minimal look */
+  .rounded-none-important {
+    border-radius: 0px !important;
   }
 }
