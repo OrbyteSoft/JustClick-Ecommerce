@@ -153,15 +153,15 @@ const ChatBot = () => {
         className={cn(
           "fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all duration-300",
           isOpen
-            ? "bg-muted hover:bg-muted/80"
-            : "gradient-hero hover:opacity-90",
+            ? "bg-emerald-500 hover:bg-emerald-400"
+            : "bg-emerald-600 hover:bg-emerald-500",
         )}
         size="icon"
       >
         {isOpen ? (
-          <X className="h-6 w-6" />
+          <X className="h-6 w-6 text-white" />
         ) : (
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-6 w-6 text-white" />
         )}
       </Button>
 
