@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ShoppingCart,
   Heart,
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,19 +22,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { categories } from "@/data/products";
+
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCategories } from "@/contexts/CategoryContext";
 import { toast } from "sonner";
 import SearchBar from "@/components/search/SearchBar";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
+  const { categories } = useCategories();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,8 +58,12 @@ const Header = () => {
   };
 
   const getInitials = () => {
-    if (profile?.first_name && profile?.last_name) {
-      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
+    if (user?.name) {
+      const parts = user.name.trim().split(" ");
+      if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+      }
+      return parts[0][0].toUpperCase();
     }
     return user?.email?.[0].toUpperCase() || "U";
   };
@@ -100,8 +107,9 @@ const Header = () => {
                         asChild
                         className="focus:bg-zinc-50 dark:focus:bg-zinc-900 rounded-md cursor-pointer"
                       >
+                        {/* Use categoryId query param to match backend QueryProductDto */}
                         <Link
-                          to={`/products?category=${cat.slug}`}
+                          to={`/products?categoryId=${cat.id}`}
                           className="text-[10px] uppercase tracking-[0.15em] font-light py-3 px-3 text-zinc-500 dark:text-zinc-400 block"
                         >
                           {cat.name}
@@ -124,7 +132,6 @@ const Header = () => {
             <div className="hidden lg:flex justify-center w-full px-8">
               <div className="relative group w-full max-w-[680px]">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 rounded-full blur-md opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-
                 <div className="relative flex items-center w-full bg-secondary/40 dark:bg-zinc-900/40 backdrop-blur-md rounded-full border border-border/50 shadow-sm transition-all duration-300 group-focus-within:bg-background group-focus-within:border-primary/30 group-focus-within:shadow-lg group-focus-within:shadow-primary/5">
                   <SearchBar className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none hover:shadow-none" />
                 </div>
@@ -159,11 +166,10 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                    className="rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
                   >
-                    <Avatar className="h-7 w-7 border border-zinc-100 dark:border-zinc-800">
-                      <AvatarImage src={profile?.avatar_url} />
-                      <AvatarFallback className="bg-zinc-900 text-white text-[10px] font-bold">
+                    <Avatar className="h-8 w-8 border border-zinc-100 dark:border-zinc-800">
+                      <AvatarFallback className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[11px] font-bold tracking-tighter">
                         {getInitials()}
                       </AvatarFallback>
                     </Avatar>
@@ -172,7 +178,7 @@ const Header = () => {
 
                 <DropdownMenuContent
                   align="end"
-                  className="w-64 mt-4 p-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-xl overflow-hidden"
+                  className="w-64 mt-4 p-0 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-none overflow-hidden"
                 >
                   {user ? (
                     <>
@@ -186,15 +192,15 @@ const Header = () => {
                       </div>
                       <div className="p-1.5">
                         <DropdownMenuItem
-                          onClick={() => navigate("/account/orders")}
-                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400 focus:bg-zinc-50 dark:focus:bg-zinc-900 rounded-md transition-all"
+                          onClick={() => navigate("/track-order")}
+                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400 focus:bg-zinc-50 dark:focus:bg-zinc-900 rounded-md transition-all cursor-pointer"
                         >
-                          <Package className="h-3.5 w-3.5 opacity-30" /> My
+                          <Package className="h-3.5 w-3.5 opacity-30" /> Track
                           Orders
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => navigate("/account/profile")}
-                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400 focus:bg-zinc-50 dark:focus:bg-zinc-900 rounded-md transition-all"
+                          onClick={() => navigate("/profile")}
+                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400 focus:bg-zinc-50 dark:focus:bg-zinc-900 rounded-md transition-all cursor-pointer"
                         >
                           <Settings className="h-3.5 w-3.5 opacity-30" />{" "}
                           Settings
@@ -202,7 +208,7 @@ const Header = () => {
                         <DropdownMenuSeparator className="my-1.5 bg-zinc-100 dark:bg-zinc-800" />
                         <DropdownMenuItem
                           onClick={handleSignOut}
-                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-red-400 focus:bg-red-50 dark:focus:bg-red-950/20 rounded-md"
+                          className="flex items-center gap-3 px-3 py-2.5 text-[10px] font-light uppercase tracking-[0.15em] text-red-400 focus:bg-red-50 dark:focus:bg-red-950/20 rounded-md cursor-pointer"
                         >
                           <LogOut className="h-3.5 w-3.5 opacity-60" /> Sign Out
                         </DropdownMenuItem>
@@ -214,7 +220,7 @@ const Header = () => {
                         <User className="h-5 w-5 text-zinc-300" />
                       </div>
                       <p className="text-[10px] font-light uppercase tracking-[0.2em] text-zinc-400 mb-4">
-                        Welcome to SupplySewa
+                        Welcome to JustClick
                       </p>
                       <Button
                         onClick={() => navigate("/auth")}
@@ -270,7 +276,10 @@ const Header = () => {
                       path: "/hot-deals",
                       highlight: true,
                     },
-                    { name: "New Arrivals", path: "/products?sort=newest" },
+                    {
+                      name: "New Arrivals",
+                      path: "/products?sortBy=newest", // Matches backend sortFieldMap
+                    },
                   ].map((item) => (
                     <Link
                       key={item.name}
@@ -298,7 +307,7 @@ const Header = () => {
                   {categories.map((cat) => (
                     <Link
                       key={cat.id}
-                      to={`/products?category=${cat.slug}`}
+                      to={`/products?categoryId=${cat.id}`}
                       onClick={() => setIsMenuOpen(false)}
                       className="group flex items-center justify-between py-4 px-2 border-b border-zinc-50 dark:border-zinc-900"
                     >

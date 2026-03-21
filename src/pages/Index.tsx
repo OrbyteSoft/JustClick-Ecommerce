@@ -7,8 +7,15 @@ import FeaturedProducts from "@/components/home/FeaturedProducts";
 import DealsSection from "@/components/home/DealsSection";
 import BestSellers from "@/components/home/BestSellers";
 import TrustBadges from "@/components/home/TrustBadges";
+import { useProducts } from "@/contexts/ProductContext";
 
 const Index = () => {
+  const { homepageData, isLoading } = useProducts();
+
+  // Check if there are any flash deals
+  const hasFlashDeals =
+    homepageData?.flashDeals && homepageData.flashDeals.length > 0;
+
   return (
     <>
       <Helmet>
@@ -29,7 +36,7 @@ const Index = () => {
           <HeroSection />
           <CategorySection />
           <FeaturedProducts />
-          <DealsSection />
+          {hasFlashDeals && <DealsSection />}
           <BestSellers />
           <TrustBadges />
         </main>

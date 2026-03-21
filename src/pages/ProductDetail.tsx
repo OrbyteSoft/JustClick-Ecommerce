@@ -1,19 +1,18 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
-  Star,
   Heart,
   ShoppingCart,
-  Share2,
-  Truck,
-  Shield,
-  RotateCcw,
-  Minus,
-  Plus,
-  Check,
   ChevronRight,
   Zap,
+  Loader2,
+  Minus,
+  Plus,
+  ArrowLeft,
+  Star,
+  MessageSquare,
+  Trash2,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -21,356 +20,444 @@ import ProductCard from "@/components/products/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { products } from "@/data/products";
+import { Textarea } from "@/components/ui/textarea";
+import { useProducts } from "@/contexts/ProductContext";
 import { useCart } from "@/contexts/CartContext";
-import { useWishlist } from "@/contexts/WishlistContext"; // Integrated Wishlist
+import { useWishlist } from "@/contexts/WishlistContext";
+import { useReview } from "@/contexts/ReviewContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { ProductResponseDto } from "@/types/api";
 
 const ProductDetail = () => {
-  const { slug } = useParams();
-  const product = products.find((p) => p.slug === slug);
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [product, setProduct] = useState<ProductResponseDto | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [userRating, setUserRating] = useState(5);
+  const [userComment, setUserComment] = useState("");
 
+  const {
+    getProductBySlug,
+    products: allProducts,
+    fetchProducts,
+  } = useProducts();
   const { addToCart } = useCart();
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const {
+    productReviews,
+    fetchReviews,
+    submitReview,
+    isSubmitting,
+    isLoading: isReviewsLoading,
+  } = useReview();
 
-  if (!product) {
-    return (
-      <div className="min-h-screen flex flex-col bg-background font-mono">
-        <Header />
-        <main className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center border border-dashed border-primary/30 p-12">
-            <Zap className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-            <h1 className="text-2xl font-black uppercase tracking-tighter mb-2">
-              Protocol Missing
-            </h1>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-6">
-              Device not found in inventory
-            </p>
-            <Link to="/products">
-              <Button className="rounded-none font-black uppercase tracking-widest text-xs">
-                Return to Catalog
-              </Button>
-            </Link>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Action Logic
-  const isWishlisted = isInWishlist(product.id);
-
-  const handleWishlistToggle = () => {
-    if (isWishlisted) {
-      removeFromWishlist(product.id);
-      toast.error(`${product.name} purged from vault`);
-    } else {
-      addToWishlist(product);
-      toast.success(`${product.name} archived to vault`);
-    }
-  };
-
-  const handleShare = async () => {
-    const shareData = {
-      title: `${product.name} | Supply Sewa`,
-      text: `Unit deployment detected: ${product.name}`,
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
+  const loadProductData = useCallback(
+    async (productSlug: string) => {
+      setIsLoading(true);
       try {
-        await navigator.share(shareData);
-        toast.success("Broadcast successful");
-      } catch (err) {
-        if ((err as Error).name !== "AbortError")
-          toast.error("Transmission failed");
+        const data = await getProductBySlug(productSlug);
+        if (data) {
+          setProduct(data);
+          await Promise.all([
+            data.categoryId
+              ? fetchProducts({ categoryId: data.categoryId, limit: 5 })
+              : Promise.resolve(),
+            fetchReviews(data.id),
+          ]);
+        }
+      } catch (error) {
+        toast.error("Could not load product details");
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard. Broadcast manually.");
+    },
+    [getProductBySlug, fetchProducts, fetchReviews],
+  );
+
+  useEffect(() => {
+    if (slug) loadProductData(slug);
+    setSelectedImage(0);
+    setQuantity(1);
+  }, [slug, loadProductData]);
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product) return;
+    const success = await submitReview({
+      productId: product.id,
+      rating: userRating,
+      comment: userComment,
+    });
+    if (success) {
+      setUserComment("");
+      setUserRating(5);
     }
   };
 
+  const isWishlisted = product ? isInWishlist(product.id) : false;
   const formatPrice = (price: number) => `Rs. ${price.toLocaleString()}`;
-
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
-    toast.success(`${product.name} deployed to cart`);
-  };
-
-  const handleBuyNow = () => {
-    addToCart(product, quantity);
-    window.location.href = "/cart";
-  };
-
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
+  const relatedProducts = allProducts
+    .filter((p) => p.id !== product?.id)
     .slice(0, 4);
 
   return (
     <>
       <Helmet>
-        <title>{product.name} | Supply Sewa</title>
-        <meta name="description" content={product.description} />
+        <title>{product ? `${product.name} | Just Click` : "Loading..."}</title>
       </Helmet>
 
-      <div className="min-h-screen flex flex-col bg-background overflow-x-hidden selection:bg-primary/10">
+      <div className="min-h-screen flex flex-col bg-background text-zinc-900 dark:text-zinc-100 overflow-x-hidden">
         <Header />
-        <main className="flex-1 w-full">
-          <div className="container-custom px-4 py-8 md:py-12">
-            {/* Breadcrumb */}
-            <nav className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-8 flex flex-wrap items-center gap-2">
-              <Link to="/" className="hover:text-primary transition-colors">
-                Home
-              </Link>
-              <ChevronRight className="h-3 w-3 opacity-30" />
-              <Link
-                to="/products"
-                className="hover:text-primary transition-colors"
+
+        <main className="flex-1 flex flex-col">
+          <div className="container max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
+            {/* Breadcrumb - Added wrap and break-words */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+              <nav className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 flex items-center flex-wrap gap-2">
+                <Link to="/" className="hover:text-primary shrink-0">
+                  Home
+                </Link>
+                <ChevronRight className="h-3 w-3 shrink-0" />
+                <span className="text-zinc-900 dark:text-white break-words max-w-[200px] md:max-w-none">
+                  {product?.name || "Product"}
+                </span>
+              </nav>
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-primary shrink-0"
               >
-                Catalog
-              </Link>
-              <ChevronRight className="h-3 w-3 opacity-30" />
-              <span className="text-foreground">{product.name}</span>
-            </nav>
-
-            <div className="grid lg:grid-cols-2 gap-12 mb-20">
-              {/* Product Gallery */}
-              <div className="space-y-4">
-                <div className="aspect-square bg-zinc-50 dark:bg-zinc-900 border border-border flex items-center justify-center p-8 overflow-hidden group">
-                  <img
-                    src={product.images[selectedImage]}
-                    alt={product.name}
-                    className="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-700"
-                  />
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                  {product.images.map((img, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedImage(i)}
-                      className={`w-20 h-20 shrink-0 border transition-all ${
-                        selectedImage === i
-                          ? "border-primary p-1 bg-primary/5"
-                          : "border-border p-2 grayscale hover:grayscale-0"
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt=""
-                        className="w-full h-full object-contain"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Product Specs & Purchase */}
-              <div className="flex flex-col">
-                <div className="flex justify-between items-start gap-4 mb-6">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-2">
-                      {product.brand} / Ref.{product.id.split("-")[0]}
-                    </p>
-                    <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none break-words">
-                      {product.name}
-                    </h1>
-                  </div>
-
-                  {/* Actions Area */}
-                  <div className="flex gap-2 shrink-0 pt-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleWishlistToggle}
-                      className={`rounded-none border-border h-12 w-12 transition-all duration-300 ${
-                        isWishlisted
-                          ? "bg-primary text-white border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] translate-x-[-2px] translate-y-[-2px]"
-                          : "hover:text-primary hover:border-primary"
-                      }`}
-                    >
-                      <Heart
-                        className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`}
-                      />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleShare}
-                      className="rounded-none border-border h-12 w-12 hover:border-primary hover:text-primary transition-colors"
-                    >
-                      <Share2 className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-6 mb-8 py-6 border-y border-border">
-                  <div>
-                    <p className="text-4xl font-black tracking-tighter">
-                      {formatPrice(product.price)}
-                    </p>
-                    {product.originalPrice && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground line-through font-bold">
-                          {formatPrice(product.originalPrice)}
-                        </span>
-                        <span className="text-[10px] font-black text-primary uppercase">
-                          -{product.discount}%
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <Badge className="rounded-none bg-green-500/10 text-green-600 border-none text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1">
-                    [ In Stock: {product.stock} Units ]
-                  </Badge>
-                </div>
-
-                {/* Purchase Controls */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-12">
-                  <div className="flex items-center border border-border h-14 bg-zinc-50 dark:bg-zinc-900">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="rounded-none w-14 h-full"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-12 text-center font-black text-sm">
-                      {quantity}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        setQuantity(Math.min(product.stock, quantity + 1))
-                      }
-                      className="rounded-none w-14 h-full"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <Button
-                    className="flex-1 h-14 rounded-none font-black uppercase tracking-widest text-xs"
-                    onClick={handleAddToCart}
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="flex-1 h-14 rounded-none font-black uppercase tracking-widest text-xs border-zinc-950 dark:border-white hover:bg-zinc-950 hover:text-white dark:hover:bg-white dark:hover:text-zinc-950"
-                    onClick={handleBuyNow}
-                  >
-                    Instant Checkout
-                  </Button>
-                </div>
-
-                {/* Logistics Info */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border border border-border">
-                  <div className="bg-background p-5 flex items-center gap-4">
-                    <Truck className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-tighter">
-                        Fast Delivery
-                      </p>
-                      <p className="text-[9px] text-muted-foreground uppercase">
-                        2-3 Business Days
-                      </p>
-                    </div>
-                  </div>
-                  <div className="bg-background p-5 flex items-center gap-4">
-                    <Shield className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-tighter">
-                        Secure Protocol
-                      </p>
-                      <p className="text-[9px] text-muted-foreground uppercase">
-                        Official Warranty
-                      </p>
-                    </div>
-                  </div>
-                  <div className="bg-background p-5 flex items-center gap-4">
-                    <RotateCcw className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-tighter">
-                        Return Policy
-                      </p>
-                      <p className="text-[9px] text-muted-foreground uppercase">
-                        7-Day window
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <ArrowLeft className="h-3 w-3" /> Return
+              </button>
             </div>
 
-            {/* Content Tabs */}
-            <Tabs defaultValue="specs" className="border border-border">
-              <TabsList className="bg-zinc-50 dark:bg-zinc-900 h-auto gap-8 border-b border-border rounded-none p-0 w-full justify-start px-6">
-                <TabsTrigger
-                  value="specs"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-4 text-[11px] font-black uppercase tracking-[0.2em]"
-                >
-                  Technical Specs
-                </TabsTrigger>
-                <TabsTrigger
-                  value="desc"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-4 text-[11px] font-black uppercase tracking-[0.2em]"
-                >
-                  Overview
-                </TabsTrigger>
-              </TabsList>
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-32">
+                <Loader2 className="h-10 w-10 animate-spin text-primary opacity-20" />
+              </div>
+            ) : !product ? (
+              <div className="py-20 text-center uppercase font-black">
+                Product Not Found
+              </div>
+            ) : (
+              <>
+                <div className="grid lg:grid-cols-2 gap-8 md:gap-16 mb-16">
+                  {/* Image Gallery */}
+                  <div className="space-y-4">
+                    <div className="aspect-square bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center p-4 md:p-12 overflow-hidden">
+                      <img
+                        src={
+                          product.images[selectedImage]?.url ||
+                          "/placeholder.png"
+                        }
+                        alt={product.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                      {product.images.map((img, i) => (
+                        <button
+                          key={img.id}
+                          onClick={() => setSelectedImage(i)}
+                          className={`w-16 h-16 md:w-20 md:h-20 shrink-0 border transition-all ${
+                            selectedImage === i
+                              ? "border-primary"
+                              : "border-zinc-200 dark:border-zinc-800 opacity-60"
+                          }`}
+                        >
+                          <img
+                            src={img.url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              <TabsContent value="specs" className="p-6 md:p-12 m-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
-                  {Object.entries(product.specifications).map(([k, v]) => (
-                    <div
-                      key={k}
-                      className="flex justify-between items-center py-3 border-b border-border/50 text-[11px]"
+                  {/* Info Area */}
+                  <div className="flex flex-col justify-center overflow-hidden">
+                    <div className="mb-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex text-yellow-500">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3 w-3 ${i < Math.round(productReviews?.averageRating || 0) ? "fill-current" : ""}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-bold text-zinc-400">
+                          ({productReviews?.totalReviews || 0} REVIEWS)
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] block truncate">
+                        SKU: {product.sku || "N/A"}
+                      </span>
+                      <h1 className="text-2xl md:text-5xl font-black tracking-tighter mt-2 text-zinc-900 dark:text-white uppercase leading-tight break-words">
+                        {product.name}
+                      </h1>
+                    </div>
+
+                    <div className="flex items-center gap-4 mb-8 flex-wrap">
+                      <span className="text-2xl md:text-3xl font-bold">
+                        {formatPrice(product.price)}
+                      </span>
+                      {product.compareAt && (
+                        <span className="text-base md:text-lg text-zinc-400 line-through">
+                          {formatPrice(product.compareAt)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* ACTIONS BAR: Responsive rearrangement */}
+                    <div className="flex flex-col gap-4 mb-10">
+                      {/* Top Row: Quantity and Wishlist at the end */}
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="flex items-center border border-zinc-200 dark:border-zinc-800 h-12 md:h-14 bg-white dark:bg-zinc-900">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-none h-full"
+                            onClick={() =>
+                              setQuantity(Math.max(1, quantity - 1))
+                            }
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-10 text-center font-bold font-mono text-sm">
+                            {quantity.toString().padStart(2, "0")}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-none h-full"
+                            onClick={() =>
+                              setQuantity(Math.min(product.stock, quantity + 1))
+                            }
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {/* Wishlist Button pushed to the end on mobile and desktop */}
+                        <div className="ml-auto">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className={`h-12 w-12 md:h-14 md:w-14 rounded-none transition-colors ${
+                              isWishlisted
+                                ? "text-red-500 border-red-500 bg-red-50 dark:bg-red-950/20"
+                                : ""
+                            }`}
+                            onClick={() => toggleWishlist(product.id)}
+                          >
+                            <Heart
+                              className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`}
+                            />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Bottom Row: Full width Add to Cart */}
+                      <Button
+                        className="w-full h-12 md:h-14 text-[11px] font-black uppercase tracking-[0.3em] rounded-none shadow-lg"
+                        onClick={() => addToCart(product.id, quantity)}
+                        disabled={product.stock <= 0}
+                      >
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        {product.stock > 0 ? "Add to Cart" : "Sold Out"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TABS SECTION - Improved horizontal scroll for mobile */}
+                <div className="mb-20">
+                  <Tabs defaultValue="description" className="w-full">
+                    <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-zinc-100 dark:border-zinc-800 h-auto p-0 gap-6 md:gap-8 overflow-x-auto no-scrollbar">
+                      <TabsTrigger
+                        value="description"
+                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-4 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap"
+                      >
+                        Description
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="reviews"
+                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-4 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap"
+                      >
+                        Reviews ({productReviews?.totalReviews || 0})
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent
+                      value="description"
+                      className="py-10 outline-none"
                     >
-                      <span className="font-black uppercase tracking-widest text-muted-foreground">
-                        {k}
-                      </span>
-                      <span className="font-bold uppercase tracking-tighter">
-                        {v}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
+                      <div className="prose prose-zinc dark:prose-invert max-w-none">
+                        <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed text-sm md:text-base break-words">
+                          {product.description}
+                        </p>
+                      </div>
+                    </TabsContent>
 
-              <TabsContent value="desc" className="p-6 md:p-12 m-0 max-w-3xl">
-                <p className="text-sm leading-loose text-muted-foreground uppercase tracking-tight font-medium">
-                  {product.description}
-                </p>
-              </TabsContent>
-            </Tabs>
+                    <TabsContent value="reviews" className="py-10 outline-none">
+                      <div className="grid lg:grid-cols-3 gap-10 md:gap-16">
+                        {/* Summary & Form */}
+                        <div className="lg:col-span-1 space-y-10">
+                          <div>
+                            <h3 className="text-3xl md:text-4xl font-black mb-2">
+                              {productReviews?.averageRating || "0.0"}
+                            </h3>
+                            <div className="flex text-yellow-500 mb-2">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-5 w-5 ${i < Math.round(productReviews?.averageRating || 0) ? "fill-current" : ""}`}
+                                />
+                              ))}
+                            </div>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                              Based on {productReviews?.totalReviews || 0}{" "}
+                              customer reviews
+                            </p>
+                          </div>
 
-            {/* Related Inventory */}
-            {relatedProducts.length > 0 && (
-              <section className="mt-24">
-                <div className="flex items-center gap-4 mb-10">
-                  <h2 className="text-xl font-black uppercase tracking-tighter">
-                    Related Inventory
-                  </h2>
-                  <div className="h-px flex-1 bg-border"></div>
+                          {user ? (
+                            <form
+                              onSubmit={handleReviewSubmit}
+                              className="space-y-4 p-4 md:p-6 border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50"
+                            >
+                              <h4 className="text-xs font-black uppercase tracking-widest">
+                                Submit a Review
+                              </h4>
+                              <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((s) => (
+                                  <button
+                                    key={s}
+                                    type="button"
+                                    onClick={() => setUserRating(s)}
+                                    className="focus:outline-none"
+                                  >
+                                    <Star
+                                      className={`h-5 w-5 ${userRating >= s ? "text-yellow-500 fill-current" : "text-zinc-300"}`}
+                                    />
+                                  </button>
+                                ))}
+                              </div>
+                              <Textarea
+                                placeholder="Write your thoughts..."
+                                className="rounded-none min-h-[120px] bg-white dark:bg-background text-sm"
+                                value={userComment}
+                                onChange={(e) => setUserComment(e.target.value)}
+                                required
+                              />
+                              <Button
+                                disabled={isSubmitting}
+                                className="w-full rounded-none uppercase text-[10px] font-black tracking-widest h-12"
+                              >
+                                {isSubmitting ? (
+                                  <Loader2 className="animate-spin h-4 w-4" />
+                                ) : (
+                                  "Post Review"
+                                )}
+                              </Button>
+                            </form>
+                          ) : (
+                            <div className="p-8 border border-dashed border-zinc-200 text-center">
+                              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mb-4">
+                                Login to share feedback
+                              </p>
+                              <Link to="/auth">
+                                <Button
+                                  variant="outline"
+                                  className="rounded-none text-[10px] font-black uppercase tracking-widest px-8"
+                                >
+                                  Sign In
+                                </Button>
+                              </Link>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Reviews List */}
+                        <div className="lg:col-span-2 space-y-8">
+                          {isReviewsLoading ? (
+                            <div className="flex py-10">
+                              <Loader2 className="animate-spin h-6 w-6 text-primary" />
+                            </div>
+                          ) : productReviews?.reviews.length === 0 ? (
+                            <div className="py-20 text-center border border-zinc-50 dark:border-zinc-900">
+                              <MessageSquare className="h-10 w-10 mx-auto mb-4 text-zinc-200" />
+                              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                Be the first to review
+                              </p>
+                            </div>
+                          ) : (
+                            productReviews?.reviews.map((review) => (
+                              <div
+                                key={review.id}
+                                className="group pb-8 border-b border-zinc-50 dark:border-zinc-900 last:border-0"
+                              >
+                                <div className="flex justify-between items-start mb-4 gap-2">
+                                  <div className="flex items-center gap-3">
+                                    <div className="h-8 w-8 md:h-10 md:w-10 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-black text-[10px] uppercase shrink-0">
+                                      {review.user.name?.charAt(0) || "U"}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-black uppercase tracking-widest truncate">
+                                        {review.user.name || "Verified User"}
+                                      </p>
+                                      <div className="flex text-yellow-500 mt-0.5">
+                                        {[...Array(5)].map((_, i) => (
+                                          <Star
+                                            key={i}
+                                            className={`h-2.5 w-2.5 ${i < review.rating ? "fill-current" : ""}`}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <span className="text-[9px] font-bold text-zinc-400 uppercase shrink-0">
+                                    {new Date(
+                                      review.createdAt,
+                                    ).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium md:pl-13 break-words">
+                                  {review.comment}
+                                </p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 border-t border-l border-border bg-border gap-px">
-                  {relatedProducts.map((p) => (
-                    <div key={p.id} className="bg-background">
-                      <ProductCard product={p} />
+
+                {/* Similar Discoveries */}
+                {relatedProducts.length > 0 && (
+                  <section className="pt-16 border-t border-zinc-100 dark:border-zinc-800">
+                    <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter mb-10">
+                      Similar Discoveries
+                    </h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                      {relatedProducts.map((p) => (
+                        <ProductCard key={p.id} product={p} />
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </section>
+                  </section>
+                )}
+              </>
             )}
           </div>
         </main>
+
         <Footer />
       </div>
     </>

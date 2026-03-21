@@ -1,58 +1,92 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Heart, ArrowRight, Trash2, ShoppingCart, Zap } from "lucide-react";
+import { Heart, ArrowRight, Trash2, ShoppingCart, Loader2 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const Wishlist = () => {
-  const { wishlistItems, removeFromWishlist, clearWishlist } = useWishlist();
+  const { wishlistItems, toggleWishlist, clearWishlist, isLoading } =
+    useWishlist();
   const { addToCart } = useCart();
+
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   const formatPrice = (price: number) => `Rs. ${price.toLocaleString()}`;
 
-  const handleAddToCart = (product: any) => {
-    addToCart(product);
-    removeFromWishlist(product.id);
-    toast.success(`${product.name} deployed to cart`);
+  const handleAddToCart = async (product: any) => {
+    try {
+      setActionLoadingId(product.id);
+      await addToCart(product.id, 1);
+      await toggleWishlist(product.id);
+      toast.success(`${product.name} moved to shopping bag`);
+    } catch (error) {
+      toast.error("Failed to move item to cart");
+    } finally {
+      setActionLoadingId(null);
+    }
   };
 
-  const handleRemove = (productId: string, productName: string) => {
-    removeFromWishlist(productId);
-    toast.error(`${productName} removed from vault`);
+  const handleRemove = async (productId: string) => {
+    try {
+      setActionLoadingId(productId);
+      await toggleWishlist(productId);
+    } catch (error) {
+      toast.error("Failed to remove item");
+    } finally {
+      setActionLoadingId(null);
+    }
   };
+
+  const handleClearAll = async () => {
+    try {
+      setClearing(true);
+      await clearWishlist();
+      toast.success("Wishlist cleared");
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary opacity-50" />
+      </div>
+    );
+  }
 
   if (wishlistItems.length === 0) {
     return (
       <>
         <Helmet>
-          <title>Saved Protocols | Just Click</title>
+          <title>My Wishlist | Just Click</title>
         </Helmet>
-
-        <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
+        <div className="min-h-screen flex flex-col bg-background">
           <Header />
-          <main className="flex-1 flex items-center justify-center py-20">
-            <div className="text-center px-6 max-w-md">
-              <div className="w-20 h-20 mx-auto mb-8 bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center border border-border">
-                <Heart className="h-8 w-8 text-zinc-400" />
+          <main className="flex-1 flex items-center justify-center py-10 md:py-20">
+            <div className="text-center px-4 max-w-md">
+              <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 bg-secondary flex items-center justify-center rounded-none">
+                <Heart className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h1 className="text-3xl font-black uppercase tracking-tighter mb-4">
-                Vault is <span className="text-primary">Empty.</span>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+                Your wishlist is empty
               </h1>
-              <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest leading-relaxed mb-8">
-                Your high-performance wishlist is currently inactive. Archive
-                hardware you desire for quick deployment.
+              <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+                Save items that you like in your wishlist. Review them anytime
+                and easily move them to the cart.
               </p>
               <Link to="/products">
                 <Button
                   size="lg"
-                  className="rounded-none px-8 font-black uppercase tracking-widest text-xs h-14"
+                  className="rounded-none w-full md:w-auto px-8 font-semibold"
                 >
-                  Browse Hardware
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                  Browse Products <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
             </div>
@@ -69,93 +103,122 @@ const Wishlist = () => {
         <title>{`Wishlist (${wishlistItems.length}) | Just Click`}</title>
       </Helmet>
 
-      <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
+      <div className="min-h-screen flex flex-col bg-background">
         <Header />
         <main className="flex-1">
-          <div className="container-custom py-12 px-6">
-            {/* Header Area */}
-            <div className="flex flex-row items-end justify-between mb-12 gap-6 border-b border-zinc-100 dark:border-zinc-900 pb-8">
+          <div className="container max-w-7xl mx-auto py-8 md:py-12 px-4 md:px-6">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4 md:gap-6 border-b border-zinc-100 dark:border-zinc-800 pb-6 md:pb-8">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="h-4 w-4 text-primary fill-current" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">
-                    User Archive
+                  <Heart className="h-4 w-4 text-primary fill-current" />
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                    My Collection
                   </span>
                 </div>
-                <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase">
-                  My <span className="text-primary">Wishlist.</span>
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                  My Wishlist
                 </h1>
               </div>
 
               <Button
-                variant="ghost"
-                className="text-[10px] font-black uppercase tracking-widest hover:bg-destructive/10 hover:text-destructive rounded-none p-0 h-auto md:h-10 md:px-4"
-                onClick={clearWishlist}
+                variant="outline"
+                disabled={clearing}
+                className="text-xs font-semibold rounded-none border-zinc-200 dark:border-zinc-800 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 transition-colors h-10 md:h-12"
+                onClick={handleClearAll}
               >
-                Flush All Data
+                {clearing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Clear All Items"
+                )}
               </Button>
             </div>
 
-            {/* Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1 bg-border border border-border">
-              {wishlistItems.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-background group relative flex flex-col p-6 transition-all"
-                >
-                  {/* Image Container */}
-                  <div className="relative aspect-square overflow-hidden mb-6 bg-zinc-50 dark:bg-zinc-900 border border-border">
-                    <Link to={`/product/${product.slug}`}>
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </Link>
-                    <button
-                      className="absolute top-0 right-0 p-3 bg-background border-l border-b border-border hover:bg-destructive hover:text-white transition-colors"
-                      onClick={() => handleRemove(product.id, product.name)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+            {/* Grid Section - Mobile Friendly */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+              {wishlistItems.map((product) => {
+                const displayImage =
+                  product.images?.[0]?.url || "/placeholder.png";
+                const isProcessing = actionLoadingId === product.id;
 
-                  {/* Info */}
-                  <div className="flex-1 flex flex-col">
-                    <div className="mb-auto">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">
-                        {product.brand}
-                      </p>
+                return (
+                  <div
+                    key={product.id}
+                    className="group relative flex flex-col bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-none p-3 md:p-4 shadow-sm transition-all"
+                  >
+                    {/* Image Wrapper */}
+                    <div className="relative aspect-square overflow-hidden mb-4 rounded-none bg-zinc-50 dark:bg-zinc-800">
                       <Link to={`/product/${product.slug}`}>
-                        <h3 className="text-sm font-black uppercase tracking-tight line-clamp-2 mb-4 group-hover:text-primary transition-colors">
-                          {product.name}
-                        </h3>
+                        <img
+                          src={displayImage}
+                          alt={product.name}
+                          className="w-full h-full object-contain p-4 transition-transform duration-500 md:group-hover:scale-105"
+                        />
                       </Link>
+
+                      {/* Remove Button */}
+                      <button
+                        disabled={isProcessing}
+                        className="absolute top-0 right-0 p-2.5 bg-white/90 dark:bg-zinc-900/90 border-l border-b border-zinc-100 dark:border-zinc-800 hover:bg-red-600 hover:text-white transition-all z-10 disabled:opacity-50 text-zinc-600 dark:text-zinc-300"
+                        onClick={() => handleRemove(product.id)}
+                        title="Remove from wishlist"
+                      >
+                        {isProcessing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </button>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground font-bold line-through decoration-primary">
-                          {product.originalPrice
-                            ? formatPrice(product.originalPrice)
-                            : ""}
-                        </span>
-                        <span className="text-lg font-black tracking-tighter">
-                          {formatPrice(product.price)}
-                        </span>
+                    {/* Content Section */}
+                    <div className="flex-1 flex flex-col">
+                      <div className="mb-3">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">
+                          {product.category?.name || "Product"}
+                        </p>
+                        <Link to={`/product/${product.slug}`}>
+                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2 min-h-[2.5rem] md:group-hover:text-primary transition-colors leading-snug">
+                            {product.name}
+                          </h3>
+                        </Link>
                       </div>
 
-                      <Button
-                        size="icon"
-                        className="h-12 w-12 rounded-none bg-zinc-950 dark:bg-white dark:text-zinc-950"
-                        onClick={() => handleAddToCart(product)}
-                      >
-                        <ShoppingCart className="h-5 w-5" />
-                      </Button>
+                      {/* Bottom Controls */}
+                      <div className="mt-auto flex items-center justify-between gap-4 pt-3 border-t border-zinc-50 dark:border-zinc-800">
+                        <div className="flex flex-col">
+                          <span className="text-base md:text-lg font-bold text-zinc-900 dark:text-white">
+                            {formatPrice(product.price)}
+                          </span>
+                          <span
+                            className={`text-[10px] font-medium ${
+                              product.stock > 0
+                                ? "text-green-600"
+                                : "text-red-500"
+                            }`}
+                          >
+                            {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                          </span>
+                        </div>
+
+                        <Button
+                          size="icon"
+                          disabled={product.stock <= 0 || isProcessing}
+                          className="h-10 w-10 md:h-11 md:w-11 rounded-none shadow-sm"
+                          onClick={() => handleAddToCart(product)}
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <ShoppingCart className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </main>

@@ -4,23 +4,15 @@ import { Search, Loader2, X, TrendingUp, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useSearchProducts } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useProducts } from "@/contexts/ProductContext";
+import { useCategories } from "@/contexts/CategoryContext";
 import { cn } from "@/lib/utils";
 
 interface SearchBarProps {
   className?: string;
   isMobile?: boolean;
 }
-
-const popularSearches = [
-  "iPhone 15 Pro",
-  "Mechanical Keyboard",
-  "Noise Cancelling Headphones",
-  "OLED Monitor",
-  "Gaming Mouse",
-  "USB-C Hub",
-];
 
 const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
   const [query, setQuery] = useState("");
@@ -30,12 +22,14 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const { data, isLoading } = useSearchProducts(
-    debouncedQuery.length >= 2 ? debouncedQuery : "",
-    6,
-  );
+  const { products, isLoading, fetchProducts } = useProducts();
+  const { categories } = useCategories();
 
-  const products = data?.products || [];
+  useEffect(() => {
+    if (debouncedQuery.length >= 2) {
+      fetchProducts({ search: debouncedQuery, limit: 6, isActive: "true" });
+    }
+  }, [debouncedQuery, fetchProducts]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,8 +47,10 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter" && query.trim()) {
+        // Navigates to products page with 'q' parameter
         navigate(`/products?q=${encodeURIComponent(query.trim())}`);
         setIsOpen(false);
+        inputRef.current?.blur();
       }
       if (e.key === "Escape") {
         setIsOpen(false);
@@ -65,9 +61,10 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
   );
 
   const handleAction = (term: string) => {
+    if (!term.trim()) return;
     setQuery("");
     setIsOpen(false);
-    navigate(`/products?q=${encodeURIComponent(term)}`);
+    navigate(`/products?q=${encodeURIComponent(term.trim())}`);
   };
 
   const formatPrice = (price: number) => {
@@ -81,7 +78,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
   return (
     <div ref={containerRef} className={cn("relative w-full", className)}>
       <div className="relative flex items-center">
-        <Search className="absolute left-4 h-4 w-4 text-muted-foreground transition-colors group-focus-within/parent:text-primary" />
+        <Search className="absolute left-4 h-4 w-4 text-muted-foreground" />
         <Input
           ref={inputRef}
           type="text"
@@ -94,7 +91,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           className={cn(
-            "w-full pl-11 pr-24 bg-transparent border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0",
+            "w-full pl-11 pr-24 bg-muted/30 border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/20",
             isMobile ? "h-10" : "h-12",
           )}
         />
@@ -104,7 +101,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
               variant="ghost"
               size="icon"
               onClick={() => setQuery("")}
-              className="h-8 w-8 rounded-full hover:bg-muted/50"
+              className="h-8 w-8 rounded-full"
             >
               <X className="h-3.5 w-3.5" />
             </Button>
@@ -113,7 +110,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
             size="sm"
             onClick={() => handleAction(query)}
             className={cn(
-              "rounded-full font-bold transition-all shadow-sm",
+              "rounded-full font-bold",
               isMobile ? "h-8 px-3" : "h-9 px-4",
             )}
           >
@@ -126,68 +123,59 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
         </div>
       </div>
 
-      {/* Results Dropdown */}
       {isOpen && (
-        <div className="absolute top-[calc(100%+12px)] left-0 right-0 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-background border border-border rounded-xl shadow-xl z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           {debouncedQuery.length >= 2 ? (
             <div className="flex flex-col">
-              <div className="p-3 border-b border-border/50 bg-muted/20">
+              <div className="p-3 border-b bg-muted/20">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-2">
                   Matching Products
                 </p>
               </div>
 
               {isLoading ? (
-                <div className="p-12 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  <span className="text-sm font-medium">
-                    Sifting through inventory...
-                  </span>
+                <div className="p-10 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <span className="text-xs">Sifting through inventory...</span>
                 </div>
               ) : products.length > 0 ? (
                 <>
-                  <ScrollArea className="max-h-[380px]">
+                  <ScrollArea className="max-h-[350px]">
                     <div className="p-2 space-y-1">
                       {products.map((product) => (
                         <Link
                           key={product.id}
                           to={`/product/${product.slug}`}
                           onClick={() => setIsOpen(false)}
-                          className="flex items-center gap-4 p-2 rounded-xl hover:bg-primary/5 transition-all group/item"
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all group/item"
                         >
-                          <div className="h-14 w-14 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/50">
+                          <div className="h-12 w-12 rounded bg-muted overflow-hidden shrink-0">
                             <img
-                              src={product.images?.[0] || "/placeholder.png"}
+                              src={
+                                product.images?.[0]?.url || "/placeholder.png"
+                              }
                               alt={product.name}
-                              className="h-full w-full object-cover transition-transform group-hover/item:scale-110"
+                              className="h-full w-full object-cover"
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-bold text-sm truncate group-hover/item:text-primary transition-colors">
+                            <h4 className="font-semibold text-sm truncate">
                               {product.name}
                             </h4>
-                            <p className="text-xs text-muted-foreground">
-                              {product.brand}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-sm font-black text-foreground">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-primary">
                                 {formatPrice(product.price)}
                               </span>
-                              {product.discount > 0 && (
-                                <span className="text-[10px] bg-red-500/10 text-red-600 font-bold px-1.5 py-0.5 rounded">
-                                  -{product.discount}%
-                                </span>
-                              )}
                             </div>
                           </div>
-                          <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all text-primary mr-2" />
+                          <ArrowRight className="h-4 w-4 opacity-0 group-hover/item:opacity-100 transition-all text-primary" />
                         </Link>
                       ))}
                     </div>
                   </ScrollArea>
                   <Button
                     variant="ghost"
-                    className="w-full rounded-none h-12 text-sm font-bold border-t border-border/50 hover:bg-primary/5 text-primary"
+                    className="w-full rounded-none h-11 text-xs font-bold border-t hover:bg-primary/5 text-primary"
                     onClick={() => handleAction(query)}
                   >
                     View all results for "{query}"
@@ -195,10 +183,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
                 </>
               ) : (
                 <div className="p-10 text-center">
-                  <p className="font-bold text-sm">No results found</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Try a different search term.
-                  </p>
+                  <p className="text-sm font-medium">No results found</p>
                 </div>
               )}
             </div>
@@ -206,19 +191,20 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-4 text-primary">
                 <TrendingUp className="h-4 w-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  Trending Now
+                <span className="text-[10px] font-bold uppercase tracking-wider">
+                  Popular Categories
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {popularSearches.map((term) => (
+                {categories.slice(0, 8).map((category) => (
                   <button
-                    key={term}
-                    onClick={() => handleAction(term)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 hover:bg-primary hover:text-primary-foreground transition-all text-xs font-medium border border-border/50"
+                    key={category.id}
+                    onClick={() =>
+                      navigate(`/products?category=${category.slug}`)
+                    }
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-all text-xs font-medium"
                   >
-                    <Search className="h-3 w-3 opacity-50" />
-                    {term}
+                    {category.name}
                   </button>
                 ))}
               </div>

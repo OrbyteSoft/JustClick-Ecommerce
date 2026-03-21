@@ -1,96 +1,145 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import { Product } from "@/data/products";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
+import { api } from "@/lib/api";
+import { useAuth } from "./AuthContext";
+import { toast } from "sonner";
 
 interface CartItem {
-  product: Product;
+  id: string; // CartItem UUID from backend
   quantity: number;
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    stock: number;
+    image: string;
+    brand?: string;
+  };
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  getCartTotal: () => number;
-  getCartSubtotal: () => number;
-  getCartDiscount: () => number;
+  subtotal: number;
+  itemCount: number;
+  addToCart: (productId: string, quantity?: number) => Promise<void>;
+  removeFromCart: (productId: string) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [subtotal, setSubtotal] = useState(0);
+  const [itemCount, setItemCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const addToCart = (product: Product, quantity = 1) => {
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      return [...prev, { product, quantity }];
-    });
+  const fetchCart = async (): Promise<void> => {
+    if (!user) return;
+    try {
+      setIsLoading(true);
+      const data = await api("/cart");
+
+      // Map backend structure (product.images[0].url) to a flat UI-friendly image property
+      const formattedItems = data.items.map((item: any) => ({
+        ...item,
+        product: {
+          ...item.product,
+          image: item.product.images?.[0]?.url || "/placeholder.png",
+        },
+      }));
+
+      setCartItems(formattedItems);
+      setSubtotal(data.subtotal);
+      setItemCount(data.itemCount);
+    } catch (error) {
+      console.error("Failed to fetch cart:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const removeFromCart = (productId: string) => {
-    setCartItems((prev) => prev.filter((item) => item.product.id !== productId));
-  };
+  useEffect(() => {
+    fetchCart();
+  }, [user]);
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
+  const addToCart = async (productId: string, quantity = 1): Promise<void> => {
+    if (!user) {
+      toast.error("Please login to manage cart");
       return;
     }
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+    try {
+      await api("/cart", {
+        method: "POST",
+        body: JSON.stringify({ productId, quantity }),
+      });
+      await fetchCart();
+      toast.success("Item added to shipment");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to add item");
+    }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  const removeFromCart = async (productId: string): Promise<void> => {
+    try {
+      await api(`/cart/${productId}`, { method: "DELETE" });
+      await fetchCart();
+    } catch (error) {
+      toast.error("Failed to remove item");
+    }
   };
 
-  const getCartSubtotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + (item.product.originalPrice || item.product.price) * item.quantity,
-      0
-    );
+  const updateQuantity = async (
+    productId: string,
+    quantity: number,
+  ): Promise<void> => {
+    if (quantity < 1) {
+      await removeFromCart(productId);
+      return;
+    }
+    try {
+      await api(`/cart/${productId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ quantity }),
+      });
+      await fetchCart();
+    } catch (error: any) {
+      toast.error(error.message || "Quantity update failed");
+    }
   };
 
-  const getCartDiscount = () => {
-    return cartItems.reduce(
-      (total, item) => {
-        const discount = (item.product.originalPrice || item.product.price) - item.product.price;
-        return total + discount * item.quantity;
-      },
-      0
-    );
-  };
-
-  const getCartTotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + item.product.price * item.quantity,
-      0
-    );
+  const clearCart = async (): Promise<void> => {
+    try {
+      await api("/cart", { method: "DELETE" });
+      setCartItems([]);
+      setSubtotal(0);
+      setItemCount(0);
+      toast.success("Cart cleared");
+    } catch (error) {
+      toast.error("Failed to clear cart");
+    }
   };
 
   return (
     <CartContext.Provider
       value={{
         cartItems,
+        subtotal,
+        itemCount,
         addToCart,
         removeFromCart,
         updateQuantity,
         clearCart,
-        getCartTotal,
-        getCartSubtotal,
-        getCartDiscount,
+        isLoading,
       }}
     >
       {children}

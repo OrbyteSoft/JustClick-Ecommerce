@@ -5,16 +5,24 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AddressProvider } from "@/contexts/AddressContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import { CategoryProvider } from "@/contexts/CategoryContext";
+import { ProductProvider } from "@/contexts/ProductContext";
+import { CouponProvider } from "@/contexts/CouponContext";
+import { ReviewProvider } from "@/contexts/ReviewContext";
+import { OrderProvider } from "@/contexts/OrderContext";
+import { PaymentProvider } from "@/contexts/PaymentContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ChatBot from "@/components/chat/ChatBot";
 import ScrollToTop from "@/components/ScrollToTop";
 
-// Public pages
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
+import Category from "./pages/Category";
+import CategoryItem from "./pages/CategoryItems";
 import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 import Auth from "./pages/Auth";
@@ -32,16 +40,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import RefundPolicy from "./pages/RefundPolicy";
 import NotFound from "./pages/NotFound";
-
-// Admin pages
-import AdminLayout from "./components/admin/AdminLayout";
-import Dashboard from "./pages/admin/Dashboard";
-import AdminProducts from "./pages/admin/Products";
-import Orders from "./pages/admin/Orders";
-import Customers from "./pages/admin/Customers";
-import Sellers from "./pages/admin/Sellers";
-import Categories from "./pages/admin/Categories";
-import Settings from "./pages/admin/Settings";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -49,59 +48,115 @@ const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <ScrollToTop />
-                <ChatBot />
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<Index />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/product/:slug" element={<ProductDetail />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/order-success" element={<OrderSuccess />} />
-                  <Route path="/track-order" element={<TrackOrder />} />
-                  <Route path="/hot-deals" element={<HotDeals />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/help" element={<Help />} />
-                  <Route path="/shipping" element={<Shipping />} />
-                  <Route path="/returns" element={<Returns />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/refund-policy" element={<RefundPolicy />} />
-                  {/* Admin routes - protected */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute requiredRole="admin">
-                        <AdminLayout />
-                      </ProtectedRoute>
-                    }
-                  >
-                    <Route index element={<Dashboard />} />
-                    <Route path="products" element={<AdminProducts />} />
-                    <Route path="orders" element={<Orders />} />
-                    <Route path="customers" element={<Customers />} />
-                    <Route path="sellers" element={<Sellers />} />
-                    <Route path="categories" element={<Categories />} />
-                    <Route path="settings" element={<Settings />} />
-                  </Route>
-
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </WishlistProvider>
-        </CartProvider>
+        <AddressProvider>
+          {" "}
+          <CategoryProvider>
+            <ProductProvider>
+              <ReviewProvider>
+                <OrderProvider>
+                  <PaymentProvider>
+                    <CartProvider>
+                      <CouponProvider>
+                        <WishlistProvider>
+                          <TooltipProvider>
+                            <Toaster />
+                            <Sonner />
+                            <BrowserRouter
+                              future={{
+                                v7_startTransition: true,
+                                v7_relativeSplatPath: true,
+                              }}
+                            >
+                              <ScrollToTop />
+                              <ChatBot />
+                              <Routes>
+                                <Route path="/" element={<Index />} />
+                                <Route
+                                  path="/products"
+                                  element={<Products />}
+                                />
+                                <Route
+                                  path="/category"
+                                  element={<Category />}
+                                />
+                                <Route
+                                  path="/category/:slug"
+                                  element={<CategoryItem />}
+                                />
+                                <Route
+                                  path="/product/:slug"
+                                  element={<ProductDetail />}
+                                />
+                                <Route path="/cart" element={<Cart />} />
+                                <Route
+                                  path="/wishlist"
+                                  element={<Wishlist />}
+                                />
+                                <Route path="/auth" element={<Auth />} />
+                                <Route
+                                  path="/hot-deals"
+                                  element={<HotDeals />}
+                                />
+                                <Route path="/about" element={<About />} />
+                                <Route path="/contact" element={<Contact />} />
+                                <Route path="/help" element={<Help />} />
+                                <Route
+                                  path="/shipping"
+                                  element={<Shipping />}
+                                />
+                                <Route path="/returns" element={<Returns />} />
+                                <Route path="/faq" element={<FAQ />} />
+                                <Route path="/privacy" element={<Privacy />} />
+                                <Route path="/terms" element={<Terms />} />
+                                <Route
+                                  path="/refund-policy"
+                                  element={<RefundPolicy />}
+                                />
+                                <Route
+                                  path="/checkout"
+                                  element={
+                                    <ProtectedRoute>
+                                      <Checkout />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                <Route
+                                  path="/order-success"
+                                  element={
+                                    <ProtectedRoute>
+                                      <OrderSuccess />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                <Route
+                                  path="/track-order"
+                                  element={
+                                    <ProtectedRoute>
+                                      <TrackOrder />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                <Route
+                                  path="/profile"
+                                  element={
+                                    <ProtectedRoute>
+                                      <Profile />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                <Route path="*" element={<NotFound />} />
+                              </Routes>
+                            </BrowserRouter>
+                          </TooltipProvider>
+                        </WishlistProvider>
+                      </CouponProvider>
+                    </CartProvider>
+                  </PaymentProvider>
+                </OrderProvider>
+              </ReviewProvider>
+            </ProductProvider>
+          </CategoryProvider>
+        </AddressProvider>
       </AuthProvider>
     </QueryClientProvider>
   </HelmetProvider>

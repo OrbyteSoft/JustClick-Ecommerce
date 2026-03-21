@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   Eye,
   EyeOff,
   ShoppingBag,
   Truck,
-  CreditCard,
-  ArrowRight,
   Loader2,
   ChevronRight,
 } from "lucide-react";
@@ -28,8 +26,10 @@ const Auth = () => {
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -52,31 +52,57 @@ const Auth = () => {
     setIsLoading(true);
     const { error } = await signIn(loginEmail, loginPassword);
     setIsLoading(false);
-    if (error) toast.error(error.message || "Login failed.");
-    else {
+
+    if (error) {
+      toast.error(error.message || "Invalid credentials.");
+    } else {
       toast.success("Welcome back.");
-      navigate(from, { replace: true });
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (signupPassword !== confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+
+    // Backend matching Regex: Uppercase, Lowercase, Number or Special Char
+    const passwordRegex =
+      /((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+    if (!passwordRegex.test(signupPassword)) {
+      toast.error(
+        "Password too weak. Must include Uppercase, Lowercase, and a Number/Special Character.",
+      );
+      return;
+    }
+
     if (!agreedToTerms) {
       toast.error("Please accept the terms.");
       return;
     }
+
     setIsLoading(true);
+    // Matching the context parameter signature
     const { error } = await signUp(
       signupEmail,
       signupPassword,
+      confirmPassword,
       firstName,
       lastName,
     );
     setIsLoading(false);
-    if (error) toast.error(error.message || "Account creation failed.");
-    else {
-      toast.success("Membership activated.");
-      navigate(from, { replace: true });
+
+    if (error) {
+      // Backend error response handling
+      const backendError = error.response?.data?.message || error.message;
+      const errorMessage = Array.isArray(backendError)
+        ? backendError[0]
+        : backendError;
+      toast.error(errorMessage || "Registration failed.");
+    } else {
+      toast.success("Account created successfully.");
     }
   };
 
@@ -91,18 +117,14 @@ const Auth = () => {
   return (
     <>
       <Helmet>
-        <title>Account / Supply Sewa</title>
+        <title>Account / Just Click</title>
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-
         <main className="flex-1 flex flex-col lg:flex-row">
-          {/* Left Side: Brand Experience */}
           <div className="hidden lg:flex lg:w-1/2 bg-secondary/20 p-20 items-center justify-center relative overflow-hidden border-r border-border">
-            {/* Subtle grid for that 'Supply' aesthetic */}
             <div className="absolute inset-0 bg-grid pointer-events-none opacity-30"></div>
-
             <div className="max-w-md relative z-10">
               <div className="inline-flex items-center gap-2 mb-10">
                 <div className="h-[1px] w-8 bg-primary"></div>
@@ -110,60 +132,47 @@ const Auth = () => {
                   Member Benefits
                 </span>
               </div>
-
               <h2 className="text-6xl font-light tracking-tighter text-foreground leading-[0.85] mb-12">
                 Elevate <br />
                 <span className="font-black">Your Store.</span>
               </h2>
-
               <div className="space-y-10">
-                {[
-                  {
-                    icon: <ShoppingBag className="h-5 w-5" />,
-                    title: "Curated Catalog",
-                    desc: "Access to verified premium suppliers.",
-                  },
-                  {
-                    icon: <Truck className="h-5 w-5" />,
-                    title: "Priority Dispatch",
-                    desc: "Expedited shipping on all wholesale orders.",
-                  },
-                  {
-                    icon: <CreditCard className="h-5 w-5" />,
-                    title: "Flexible Payments",
-                    desc: "Net-30 terms for eligible business accounts.",
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-5 group">
-                    <div className="mt-1 text-primary group-hover:scale-110 transition-transform duration-300">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h4 className="text-[11px] font-bold uppercase tracking-widest text-foreground mb-1">
-                        {item.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground font-light leading-relaxed">
-                        {item.desc}
-                      </p>
-                    </div>
+                <div className="flex gap-5 group">
+                  <div className="mt-1 text-primary group-hover:scale-110 transition-transform duration-300">
+                    <ShoppingBag className="h-5 w-5" />
                   </div>
-                ))}
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-widest mb-1">
+                      Curated Catalog
+                    </h4>
+                    <p className="text-xs text-muted-foreground font-light">
+                      Access to verified premium suppliers.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-5 group">
+                  <div className="mt-1 text-primary group-hover:scale-110 transition-transform duration-300">
+                    <Truck className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-widest mb-1">
+                      Priority Dispatch
+                    </h4>
+                    <p className="text-xs text-muted-foreground font-light">
+                      Expedited shipping on all wholesale orders.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Side: Clean E-commerce Form */}
           <div className="flex-1 flex items-center justify-center p-8 lg:p-24 bg-white dark:bg-zinc-950">
             <div className="w-full max-w-sm">
               <div className="mb-14 text-center lg:text-left">
-                <h1 className="text-4xl font-light tracking-tighter text-foreground uppercase">
+                <h1 className="text-4xl font-light tracking-tighter uppercase">
                   {activeTab === "login" ? "Sign In" : "Register"}
                 </h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-3 font-medium">
-                  {activeTab === "login"
-                    ? "Manage your orders and preferences"
-                    : "Join our supply network today"}
-                </p>
               </div>
 
               <Tabs
@@ -174,13 +183,13 @@ const Auth = () => {
                 <TabsList className="grid w-full grid-cols-2 mb-12 bg-transparent h-auto p-0 border-b border-border rounded-none">
                   <TabsTrigger
                     value="login"
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent text-[10px] uppercase tracking-widest py-4 font-bold transition-all shadow-none"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent text-[10px] uppercase tracking-widest py-4 font-bold shadow-none"
                   >
                     Login
                   </TabsTrigger>
                   <TabsTrigger
                     value="signup"
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent text-[10px] uppercase tracking-widest py-4 font-bold transition-all shadow-none"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary bg-transparent text-[10px] uppercase tracking-widest py-4 font-bold shadow-none"
                   >
                     Join
                   </TabsTrigger>
@@ -192,43 +201,24 @@ const Auth = () => {
                 >
                   <form onSubmit={handleLogin} className="space-y-8">
                     <div className="space-y-3">
-                      <Label
-                        htmlFor="login-email"
-                        className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground"
-                      >
+                      <Label className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground">
                         Email Address
                       </Label>
                       <Input
-                        id="login-email"
                         type="email"
-                        placeholder="you@example.com"
                         className="input-minimal pb-3 text-base"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         required
                       />
                     </div>
-
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label
-                          htmlFor="login-password"
-                          className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground"
-                        >
-                          Password
-                        </Label>
-                        <Link
-                          to="/forgot-password"
-                          className="text-[9px] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
-                        >
-                          Forgot?
-                        </Link>
-                      </div>
+                      <Label className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground">
+                        Password
+                      </Label>
                       <div className="relative">
                         <Input
-                          id="login-password"
                           type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
                           className="input-minimal pb-3 text-base"
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
@@ -237,7 +227,7 @@ const Auth = () => {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -247,10 +237,9 @@ const Auth = () => {
                         </button>
                       </div>
                     </div>
-
                     <Button
                       type="submit"
-                      className="w-full bg-primary text-primary-foreground rounded-none py-8 text-[11px] font-bold uppercase tracking-[0.4em] hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
+                      className="w-full bg-primary text-primary-foreground rounded-none py-8 text-[11px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2 group"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -296,7 +285,6 @@ const Auth = () => {
                         />
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       <Label className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground">
                         Work Email
@@ -315,36 +303,44 @@ const Auth = () => {
                       <Label className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground">
                         Create Password
                       </Label>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        className="input-minimal pb-2"
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[9px] uppercase tracking-[0.3em] font-bold text-muted-foreground">
+                        Confirm Password
+                      </Label>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          className="input-minimal pb-2 pr-10"
-                          value={signupPassword}
-                          onChange={(e) => setSignupPassword(e.target.value)}
+                          className="input-minimal pb-2"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
                           required
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                          aria-label={
-                            showPassword ? "Hide password" : "Show password"
-                          }
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4 stroke-[1.5px]" />
+                            <EyeOff className="h-4 w-4" />
                           ) : (
-                            <Eye className="h-4 w-4 stroke-[1.5px]" />
+                            <Eye className="h-4 w-4" />
                           )}
                         </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-4">
+                    <div className="flex items-center gap-3 pt-2">
                       <Checkbox
                         id="terms"
-                        className="rounded-none border-border data-[state=checked]:bg-primary"
                         checked={agreedToTerms}
                         onCheckedChange={(checked) =>
                           setAgreedToTerms(checked as boolean)
@@ -352,24 +348,20 @@ const Auth = () => {
                       />
                       <Label
                         htmlFor="terms"
-                        className="text-[9px] uppercase tracking-widest text-muted-foreground leading-tight cursor-pointer"
+                        className="text-[9px] uppercase tracking-widest text-muted-foreground cursor-pointer"
                       >
-                        I agree to the membership terms & privacy policy
+                        I agree to the membership terms
                       </Label>
                     </div>
-
                     <Button
                       type="submit"
-                      className="w-full bg-primary text-primary-foreground rounded-none py-8 text-[11px] font-bold uppercase tracking-[0.4em] hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
+                      className="w-full bg-primary text-primary-foreground rounded-none py-8 text-[11px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2"
                       disabled={isLoading}
                     >
                       {isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <>
-                          Create Account{" "}
-                          <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                        </>
+                        "Create Account"
                       )}
                     </Button>
                   </form>
@@ -378,7 +370,6 @@ const Auth = () => {
             </div>
           </div>
         </main>
-
         <Footer />
       </div>
     </>

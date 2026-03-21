@@ -5,91 +5,108 @@ import {
   ChevronRight,
   ArrowRight,
   Zap,
-  Truck,
-  Shield,
-  Award,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { banners } from "@/data/products";
-
-const highlights = [
-  { icon: Zap, text: "Flash Deals", color: "text-amber-500" },
-  { icon: Truck, text: "Free Delivery", color: "text-blue-500" },
-  { icon: Shield, text: "Genuine Only", color: "text-green-500" },
-  { icon: Award, text: "Top Brands", color: "text-purple-500" },
-];
+import { useProducts } from "@/contexts/ProductContext";
 
 const HeroSection = () => {
+  const { homepageData, isLoading } = useProducts();
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Extract New Arrivals from Context
+  const newArrivals = homepageData?.newArrivals?.slice(0, 5) || [];
+
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % banners.length);
-  }, []);
+    if (newArrivals.length === 0) return;
+    setCurrentSlide((prev) => (prev + 1) % newArrivals.length);
+  }, [newArrivals.length]);
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
+    if (newArrivals.length === 0) return;
+    setCurrentSlide(
+      (prev) => (prev - 1 + newArrivals.length) % newArrivals.length,
+    );
   };
 
   useEffect(() => {
-    const timer = setInterval(nextSlide, 5000);
-    return () => clearInterval(timer);
-  }, [nextSlide]);
+    if (newArrivals.length > 0) {
+      const timer = setInterval(nextSlide, 6000);
+      return () => clearInterval(timer);
+    }
+  }, [nextSlide, newArrivals.length]);
+
+  if (isLoading) {
+    return (
+      <div className="h-[320px] md:h-[500px] w-full flex items-center justify-center bg-zinc-50 dark:bg-zinc-900">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      </div>
+    );
+  }
 
   return (
-    <section className="bg-white dark:bg-slate-950 transition-colors">
-      <div className="container mx-auto px-4 py-4 md:py-6">
-        <div className="relative group overflow-hidden rounded-none shadow-xl bg-slate-100">
+    <section className="bg-white dark:bg-zinc-950 transition-colors">
+      <div className="container-custom py-4 md:py-6">
+        <div className="relative group overflow-hidden bg-zinc-900">
           {/* Main Slider */}
-          <div className="relative h-[320px] md:h-[450px] lg:h-[500px] w-full">
-            {banners.map((banner, index) => (
+          <div className="relative h-[400px] md:h-[550px] lg:h-[600px] w-full">
+            {newArrivals.map((product, index) => (
               <div
-                key={banner.id}
-                className={`absolute inset-0 transition-all duration-700 ease-out ${
+                key={product.id}
+                className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
                   index === currentSlide
                     ? "opacity-100 scale-100 z-10"
                     : "opacity-0 scale-105 z-0"
                 }`}
               >
-                {/* Background Image with Overlay */}
+                {/* Product Image with Zoom Effect */}
                 <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-[5000ms] ease-linear"
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-[6000ms] ease-linear"
                   style={{
-                    backgroundImage: `url(${banner.image})`,
+                    backgroundImage: `url(${product.images[0]?.url || "/placeholder.png"})`,
                     transform:
-                      index === currentSlide ? "scale(1.1)" : "scale(1)",
+                      index === currentSlide ? "scale(1.15)" : "scale(1)",
                   }}
                 >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-r ${banner.gradient} via-black/40 to-transparent`}
-                  />
+                  {/* Overlay for Readability */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
                 </div>
 
                 {/* Content */}
-                <div className="relative h-full flex items-center px-6 md:px-16">
-                  <div className="max-w-xl text-white">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs md:text-sm font-semibold mb-4 animate-in fade-in slide-in-from-bottom-3">
+                <div className="relative h-full flex items-center px-6 md:px-20">
+                  <div className="max-w-2xl text-white">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-600 text-[10px] font-black uppercase tracking-widest mb-6">
                       <Zap className="h-3 w-3 fill-current" />
-                      {banner.subtitle}
+                      New Arrival
                     </div>
-                    <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-4 leading-tight drop-shadow-lg">
-                      {banner.title}
+
+                    <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 leading-[0.9] tracking-tighter uppercase drop-shadow-2xl">
+                      {product.name}
                     </h2>
-                    <p className="text-sm md:text-lg mb-8 text-white/80 line-clamp-2 max-w-md">
-                      {banner.description}
+
+                    <p className="text-sm md:text-lg mb-8 text-zinc-300 line-clamp-2 max-w-md font-medium">
+                      {product.description}
                     </p>
-                    <div className="flex flex-wrap gap-4">
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                       <Button
                         asChild
                         size="lg"
-                        className="rounded-full px-8 bg-white text-black hover:bg-slate-100 hover:scale-105 transition-all shadow-lg"
+                        className="rounded-none px-10 bg-white text-black hover:bg-zinc-200 transition-all font-black uppercase tracking-widest text-xs"
                       >
-                        <Link
-                          to={banner.link}
-                          className="flex items-center gap-2"
-                        >
-                          {banner.cta} <ArrowRight className="h-4 w-4" />
+                        <Link to={`/product/${product.slug}`}>
+                          Shop Now <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
+
+                      <div className="flex flex-col">
+                        <span className="text-white text-[10px] uppercase font-bold tracking-widest">
+                          Starting at
+                        </span>
+                        <span className="text-2xl font-black text-white">
+                          ${product.price.toLocaleString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -97,34 +114,38 @@ const HeroSection = () => {
             ))}
           </div>
 
-          {/* Navigation Controls - Hidden on Mobile, Visible on Hover on Desktop */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm hidden md:block"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm hidden md:block"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-
-          {/* Indicators */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-3">
-            {banners.map((_, index) => (
+          {/* Navigation Controls */}
+          {newArrivals.length > 1 && (
+            <>
               <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`transition-all duration-300 rounded-full ${
-                  index === currentSlide
-                    ? "w-8 bg-white h-2"
-                    : "w-2 bg-white/50 h-2 hover:bg-white/80"
-                }`}
-              />
-            ))}
-          </div>
+                onClick={prevSlide}
+                className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-4 border border-white/20 hover:bg-white hover:text-black text-white transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm hidden md:block"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                onClick={nextSlide}
+                className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-4 border border-white/20 hover:bg-white hover:text-black text-white transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm hidden md:block"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+
+              {/* Indicators */}
+              <div className="absolute bottom-10 left-6 md:left-20 z-20 flex gap-2">
+                {newArrivals.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`transition-all duration-500 h-1 ${
+                      index === currentSlide
+                        ? "w-12 bg-red-600"
+                        : "w-6 bg-white/30 hover:bg-white/60"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>

@@ -18,7 +18,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! 👋 Welcome to Supply Sewa. How can I help you today?",
+      content: "Hello! 👋 Welcome to Just Click. How can I help you today?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -103,7 +103,9 @@ const ChatBot = () => {
 
           try {
             const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            const content = parsed.choices?.[0]?.delta?.content as
+              | string
+              | undefined;
             if (content) {
               assistantContent += content;
               setMessages((prev) => {
@@ -127,7 +129,8 @@ const ChatBot = () => {
         ...prev.slice(0, -1),
         {
           role: "assistant",
-          content: "I apologize, but I'm having trouble responding right now. Please try again in a moment.",
+          content:
+            "I apologize, but I'm having trouble responding right now. Please try again in a moment.",
         },
       ]);
     } finally {
@@ -149,7 +152,9 @@ const ChatBot = () => {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all duration-300",
-          isOpen ? "bg-muted hover:bg-muted/80" : "gradient-hero hover:opacity-90"
+          isOpen
+            ? "bg-muted hover:bg-muted/80"
+            : "gradient-hero hover:opacity-90",
         )}
         size="icon"
       >
@@ -166,7 +171,7 @@ const ChatBot = () => {
           "fixed bottom-24 right-6 w-[380px] max-w-[calc(100vw-3rem)] bg-card border border-border rounded-2xl shadow-2xl z-50 transition-all duration-300 transform origin-bottom-right",
           isOpen
             ? "scale-100 opacity-100 pointer-events-auto"
-            : "scale-95 opacity-0 pointer-events-none"
+            : "scale-95 opacity-0 pointer-events-none",
         )}
       >
         {/* Header */}
@@ -176,7 +181,9 @@ const ChatBot = () => {
               <Bot className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="font-semibold text-primary-foreground">Supply Sewa Support</h3>
+              <h3 className="font-semibold text-primary-foreground">
+                Just Click Support
+              </h3>
               <p className="text-xs text-primary-foreground/80">
                 {isLoading ? "Typing..." : "Online"}
               </p>
@@ -192,7 +199,7 @@ const ChatBot = () => {
                 key={index}
                 className={cn(
                   "flex gap-2",
-                  message.role === "user" ? "flex-row-reverse" : "flex-row"
+                  message.role === "user" ? "flex-row-reverse" : "flex-row",
                 )}
               >
                 <div
@@ -200,7 +207,7 @@ const ChatBot = () => {
                     "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      : "bg-muted",
                   )}
                 >
                   {message.role === "user" ? (
@@ -214,7 +221,7 @@ const ChatBot = () => {
                     "max-w-[75%] rounded-2xl px-4 py-2 text-sm",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground rounded-br-sm"
-                      : "bg-muted rounded-bl-sm"
+                      : "bg-muted rounded-bl-sm",
                   )}
                 >
                   {message.content || (
