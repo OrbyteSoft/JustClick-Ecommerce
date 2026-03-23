@@ -12,6 +12,18 @@ export interface ImageResponseDto {
   url: string;
 }
 
+// --- Brand Types ---
+
+export interface BrandResponseDto {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // --- Category Types ---
 
 export interface CategoryResponseDto {
@@ -50,7 +62,8 @@ export interface ProductResponseDto {
   salePrice?: number | null;
   compareAt?: number | null;
   sku?: string | null;
-  brand?: string | null;
+  // --- Updated to support both string or full Brand object returned by backend ---
+  brand?: string | BrandResponseDto | null;
   stock: number;
   averageRating?: number | null;
   isActive: boolean;
@@ -133,6 +146,7 @@ export interface CreateOrderDto {
   paymentMethod: PaymentMethod;
   phone?: string;
   notes?: string;
+  transactionId?: string;
   items?: Array<{
     productId: string;
     quantity: number;

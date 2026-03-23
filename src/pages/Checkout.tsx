@@ -88,11 +88,9 @@ const Checkout = () => {
     }
   }, [addresses, selectedAddressId, addrLoading]);
 
-  const tax = subtotal * 0.13;
   const shippingCost = subtotal > 1000 ? 0 : 50;
-  const total = subtotal + tax + shippingCost;
+  const total = subtotal + shippingCost;
 
-  // Generate a unique decimal (.01 to .99) for automated matching
   useEffect(() => {
     if (showPaymentModal) {
       const randomDecimal = Math.floor(Math.random() * 99 + 1) / 100;
@@ -148,10 +146,8 @@ const Checkout = () => {
         billingAddrId: finalAddressId,
         paymentMethod: paymentMethod as any,
         phone: formData.phone,
-        notes:
-          paymentMethod !== "COD"
-            ? `[PAID-VERIFY] TransID: ${transactionId}. Expected: ${formatPrice(uniqueTotal)}. ${formData.notes}`
-            : formData.notes,
+        notes: formData.notes,
+        transactionId: paymentMethod !== "COD" ? transactionId : undefined,
       });
 
       if (order) {
@@ -399,12 +395,6 @@ const Checkout = () => {
                       <span>Subtotal</span>
                       <span className="text-foreground">
                         {formatPrice(subtotal)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Tax (13%)</span>
-                      <span className="text-foreground">
-                        {formatPrice(tax)}
                       </span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">

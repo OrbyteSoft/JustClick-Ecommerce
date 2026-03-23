@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, Loader2, X, TrendingUp, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
 
   useEffect(() => {
     if (debouncedQuery.length >= 2) {
-      fetchProducts({ search: debouncedQuery, limit: 6, isActive: "true" });
+      fetchProducts({ search: debouncedQuery, limit: 12, isActive: "true" });
     }
   }, [debouncedQuery, fetchProducts]);
 
@@ -47,7 +47,6 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter" && query.trim()) {
-        // Navigates to products page with 'q' parameter
         navigate(`/products?q=${encodeURIComponent(query.trim())}`);
         setIsOpen(false);
         inputRef.current?.blur();
@@ -75,6 +74,46 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
     }).format(price);
   };
 
+  const getBrandName = (brand: any): string => {
+    if (!brand) return "";
+    return typeof brand === "object" ? brand.name || "" : brand;
+  };
+
+  // --- 🔍 1. Extract Unique Brands that match the search query ---
+  const matchedBrands = useMemo(() => {
+    if (!debouncedQuery.trim()) return [];
+    const queryLower = debouncedQuery.toLowerCase().trim();
+
+    const uniqueBrands = new Set<string>();
+
+    products.forEach((p) => {
+      const bName = getBrandName(p.brand);
+      if (bName && bName.toLowerCase().includes(queryLower)) {
+        uniqueBrands.add(bName);
+      }
+    });
+
+    return Array.from(uniqueBrands).slice(0, 3); // Top 3 matching brands
+  }, [products, debouncedQuery]);
+
+  // --- 📦 2. Standard Product Filter (Client side subset) ---
+  const filteredResults = useMemo(() => {
+    if (!debouncedQuery.trim()) return [];
+
+    const lowerQuery = debouncedQuery.toLowerCase().trim();
+
+    return products
+      .filter((product) => {
+        const productName = product.name.toLowerCase();
+        const brandName = getBrandName(product.brand).toLowerCase();
+
+        return (
+          productName.includes(lowerQuery) || brandName.includes(lowerQuery)
+        );
+      })
+      .slice(0, 6);
+  }, [products, debouncedQuery]);
+
   return (
     <div ref={containerRef} className={cn("relative w-full", className)}>
       <div className="relative flex items-center">
@@ -82,7 +121,7 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
         <Input
           ref={inputRef}
           type="text"
-          placeholder={isMobile ? "Search..." : "Search for the latest tech..."}
+          placeholder={isMobile ? "Search..." : "Search products or brands..."}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -127,9 +166,30 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
         <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-background border border-border rounded-xl shadow-xl z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           {debouncedQuery.length >= 2 ? (
             <div className="flex flex-col">
+              {/* --- 🔥 Dropdown Quick Filters for Brands --- */}
+              {matchedBrands.length > 0 && (
+                <div className="p-3 border-b bg-primary/5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-2 mb-2">
+                    Jump to Brand
+                  </p>
+                  <div className="flex flex-wrap gap-2 px-1">
+                    {matchedBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleAction(brand)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background border text-xs font-medium hover:bg-primary hover:text-primary-foreground transition-all"
+                      >
+                        <Search className="h-3 w-3 opacity-60" />
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="p-3 border-b bg-muted/20">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-2">
-                  Matching Products
+                  Matching Products & Brands
                 </p>
               </div>
 
@@ -138,39 +198,48 @@ const SearchBar = ({ className, isMobile = false }: SearchBarProps) => {
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
                   <span className="text-xs">Sifting through inventory...</span>
                 </div>
-              ) : products.length > 0 ? (
+              ) : filteredResults.length > 0 ? (
                 <>
                   <ScrollArea className="max-h-[350px]">
                     <div className="p-2 space-y-1">
-                      {products.map((product) => (
-                        <Link
-                          key={product.id}
-                          to={`/product/${product.slug}`}
-                          onClick={() => setIsOpen(false)}
-                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all group/item"
-                        >
-                          <div className="h-12 w-12 rounded bg-muted overflow-hidden shrink-0">
-                            <img
-                              src={
-                                product.images?.[0]?.url || "/placeholder.png"
-                              }
-                              alt={product.name}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-sm truncate">
-                              {product.name}
-                            </h4>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-primary">
-                                {formatPrice(product.price)}
-                              </span>
+                      {filteredResults.map((product) => {
+                        const brandName = getBrandName(product.brand);
+
+                        return (
+                          <Link
+                            key={product.id}
+                            to={`/product/${product.slug}`}
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all group/item"
+                          >
+                            <div className="h-12 w-12 rounded bg-muted overflow-hidden shrink-0">
+                              <img
+                                src={
+                                  product.images?.[0]?.url || "/placeholder.png"
+                                }
+                                alt={product.name}
+                                className="h-full w-full object-cover"
+                              />
                             </div>
-                          </div>
-                          <ArrowRight className="h-4 w-4 opacity-0 group-hover/item:opacity-100 transition-all text-primary" />
-                        </Link>
-                      ))}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm truncate">
+                                {product.name}
+                              </h4>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-primary">
+                                  {formatPrice(product.price)}
+                                </span>
+                                {brandName && (
+                                  <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-medium truncate">
+                                    {brandName}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <ArrowRight className="h-4 w-4 opacity-0 group-hover/item:opacity-100 transition-all text-primary" />
+                          </Link>
+                        );
+                      })}
                     </div>
                   </ScrollArea>
                   <Button

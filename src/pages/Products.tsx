@@ -8,7 +8,6 @@ import {
   LayoutList,
   ChevronRight,
   Loader2,
-  X,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -39,7 +38,6 @@ const Products = () => {
   const { products, isLoading, fetchProducts } = useProducts();
   const { categories } = useCategories();
 
-  // Get current state from URL
   const categorySlug = searchParams.get("category");
   const searchQuery = searchParams.get("q") || "";
 
@@ -48,7 +46,85 @@ const Products = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Main Fetch Logic: Reacts to URL changes (category or search query)
+  // Track the master list of all brands so it never disappears when results filter down
+  const [allBrandsMasterList, setAllBrandsMasterList] = useState<any[]>([]);
+
+  const getBrandName = (brand: any): string => {
+    if (!brand) return "";
+    return typeof brand === "object" ? brand.name || "" : brand;
+  };
+
+  // 1. Compute brands from incoming products
+  const currentBrandsList = useMemo(() => {
+    const uniqueBrands = new Map<string, any>();
+
+    products.forEach((p) => {
+      if (p.brand === null || p.brand === undefined) return;
+
+      if (typeof p.brand === "object" && "name" in p.brand) {
+        const id = p.brand.id || p.brand.name;
+        uniqueBrands.set(String(id), p.brand);
+      } else if (typeof p.brand === "string") {
+        uniqueBrands.set(p.brand, p.brand);
+      }
+    });
+
+    return Array.from(uniqueBrands.values());
+  }, [products]);
+
+  // 🔥 PERSISTENT SIDEBAR FIX: Keep adding new brands to our master list so they never vanish
+  useEffect(() => {
+    if (currentBrandsList.length > 0) {
+      setAllBrandsMasterList((prevMaster) => {
+        const masterMap = new Map();
+
+        // Load existing ones
+        prevMaster.forEach((b) => {
+          const bName = getBrandName(b);
+          masterMap.set(bName, b);
+        });
+
+        // Add incoming ones
+        currentBrandsList.forEach((b) => {
+          const bName = getBrandName(b);
+          masterMap.set(bName, b);
+        });
+
+        return Array.from(masterMap.values());
+      });
+    }
+  }, [currentBrandsList]);
+
+  // 🔥 AUTO-CHECK BRAND FROM URL PARAM
+  useEffect(() => {
+    if (!searchQuery.trim() || products.length === 0 || isLoading) return;
+
+    const query = searchQuery.toLowerCase().trim();
+
+    const matchedProduct = products.find((p) => {
+      const bName = getBrandName(p.brand);
+      return bName.toLowerCase().trim() === query;
+    });
+
+    if (matchedProduct) {
+      const matchedBrandName = getBrandName(matchedProduct.brand);
+
+      setSelectedBrands((prev) =>
+        prev.includes(matchedBrandName) ? prev : [...prev, matchedBrandName],
+      );
+
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("q");
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [searchQuery, products, isLoading, setSearchParams]);
+
+  // Main Fetch Logic
   useEffect(() => {
     const params: Record<string, any> = {
       categoryId:
@@ -80,14 +156,11 @@ const Products = () => {
     [categories, categorySlug],
   );
 
-  const brands = useMemo(
-    () => [...new Set(products.map((p) => p.brand))].filter(Boolean),
-    [products],
-  );
-
-  const toggleBrand = (brand: string) => {
+  const toggleBrand = (brandName: string) => {
     setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
+      prev.includes(brandName)
+        ? prev.filter((b) => b !== brandName)
+        : [...prev, brandName],
     );
   };
 
@@ -95,18 +168,35 @@ const Products = () => {
     setPriceRange([0, 500000]);
     setSelectedBrands([]);
     setSortBy("featured");
-    setSearchParams({}); // Resets URL which triggers the useEffect
+    setSearchParams({});
   };
 
   const displayedProducts = useMemo(() => {
-    if (selectedBrands.length === 0) return products;
-    return products.filter((p) => selectedBrands.includes(p.brand));
-  }, [products, selectedBrands]);
+    return products.filter((p) => {
+      const bName = getBrandName(p.brand);
+
+      if (selectedBrands.length > 0 && !selectedBrands.includes(bName)) {
+        return false;
+      }
+
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const matchesName = p.name.toLowerCase().includes(query);
+        const matchesBrand = bName.toLowerCase().includes(query);
+
+        if (!matchesName && !matchesBrand) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [products, selectedBrands, searchQuery]);
 
   const FilterSidebar = () => (
     <div className="space-y-10">
       <div className="flex items-center justify-between">
-        <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-muted-foreground">
+        <h3 className="text-[11px] uppercase tracking-[0.2em] font-medium text-muted-foreground">
           Categories
         </h3>
         {(categorySlug || searchQuery || selectedBrands.length > 0) && (
@@ -128,8 +218,8 @@ const Products = () => {
               to="/products"
               className={`flex items-center justify-between py-2 px-3 transition-all duration-200 ${
                 !categorySlug && !searchQuery
-                  ? "bg-primary/5 text-primary font-semibold border-l-2 border-primary"
-                  : "text-muted-foreground hover:text-foreground border-l-2 border-transparent"
+                  ? "bg-primary/5 text-primary font-medium border-l border-primary"
+                  : "text-muted-foreground hover:text-foreground border-l border-transparent"
               }`}
             >
               <span className="text-sm">All Collections</span>
@@ -141,8 +231,8 @@ const Products = () => {
                 to={`/products?category=${category.slug}`}
                 className={`flex items-center justify-between py-2 px-3 transition-all duration-200 group ${
                   categorySlug === category.slug
-                    ? "bg-primary/5 text-primary font-semibold border-l-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground border-l-2 border-transparent"
+                    ? "bg-primary/5 text-primary font-medium border-l border-primary"
+                    : "text-muted-foreground hover:text-foreground border-l border-transparent"
                 }`}
               >
                 <span className="text-sm">{category.name}</span>
@@ -157,8 +247,9 @@ const Products = () => {
 
       <Separator className="bg-border/50" />
 
+      {/* Modern High-End Price Range UI */}
       <div>
-        <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-muted-foreground mb-6">
+        <h3 className="text-[11px] uppercase tracking-[0.2em] font-medium text-muted-foreground mb-6">
           Price Range
         </h3>
         <div className="px-2">
@@ -168,42 +259,55 @@ const Products = () => {
             min={0}
             max={500000}
             step={5000}
-            className="mb-6"
+            className="mb-5 cursor-pointer"
           />
-          <div className="flex items-center justify-between font-mono text-xs text-muted-foreground bg-muted/30 p-2 rounded">
-            <span>Rs. {priceRange[0].toLocaleString()}</span>
-            <span>Rs. {priceRange[1].toLocaleString()}</span>
+
+          <div className="flex items-center justify-between gap-2">
+            <span className="inline-flex items-center px-2.5 py-1.5 rounded-full border border-border/60 bg-background shadow-sm text-xs font-mono tracking-tight font-medium text-foreground">
+              Rs. {priceRange[0].toLocaleString()}
+            </span>
+
+            <span className="h-[1px] flex-1 bg-border/40"></span>
+
+            <span className="inline-flex items-center px-2.5 py-1.5 rounded-full border border-border/60 bg-background shadow-sm text-xs font-mono tracking-tight font-medium text-foreground">
+              Rs. {priceRange[1].toLocaleString()}
+            </span>
           </div>
         </div>
       </div>
 
       <Separator className="bg-border/50" />
 
-      {brands.length > 0 && (
+      {allBrandsMasterList.length > 0 && (
         <div>
-          <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-muted-foreground mb-6">
+          <h3 className="text-[11px] uppercase tracking-[0.2em] font-medium text-muted-foreground mb-6">
             Brands
           </h3>
           <div className="space-y-2">
-            {brands.map((brand) => (
-              <div
-                key={brand}
-                className="flex items-center gap-3 px-1 py-1 hover:bg-muted/50 rounded transition-colors group cursor-pointer"
-                onClick={() => toggleBrand(brand)}
-              >
-                <Checkbox
-                  id={brand}
-                  checked={selectedBrands.includes(brand)}
-                  onCheckedChange={() => toggleBrand(brand)}
-                />
-                <label
-                  htmlFor={brand}
-                  className="text-sm cursor-pointer text-muted-foreground group-hover:text-foreground"
+            {allBrandsMasterList.map((brand) => {
+              const brandName = getBrandName(brand);
+              const brandId = typeof brand === "object" ? brand.id : brand;
+
+              return (
+                <div
+                  key={String(brandId)}
+                  className="flex items-center gap-3 px-1 py-1 hover:bg-muted/50 rounded transition-colors group cursor-pointer"
+                  onClick={() => toggleBrand(brandName)}
                 >
-                  {brand}
-                </label>
-              </div>
-            ))}
+                  <Checkbox
+                    id={String(brandId)}
+                    checked={selectedBrands.includes(brandName)}
+                    onCheckedChange={() => toggleBrand(brandName)}
+                  />
+                  <label
+                    htmlFor={String(brandId)}
+                    className="text-sm cursor-pointer text-muted-foreground group-hover:text-foreground font-light"
+                  >
+                    {brandName}
+                  </label>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -230,14 +334,17 @@ const Products = () => {
               <Link to="/" className="hover:text-primary">
                 Home
               </Link>
-              <ChevronRight className="h-3 w-3 opacity-30" />
+              <ChevronRight className="h-3 w-3 opacity-30" strokeWidth={1.5} />
               <Link to="/products" className="hover:text-primary">
                 Products
               </Link>
               {currentCategory && (
                 <>
-                  <ChevronRight className="h-3 w-3 opacity-30" />
-                  <span className="text-foreground font-bold">
+                  <ChevronRight
+                    className="h-3 w-3 opacity-30"
+                    strokeWidth={1.5}
+                  />
+                  <span className="text-foreground font-medium">
                     {currentCategory.name}
                   </span>
                 </>
@@ -250,7 +357,7 @@ const Products = () => {
                   ? `Search results for "${searchQuery}"`
                   : currentCategory?.name || "All Products"}
               </h1>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-medium">
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-light">
                 {displayedProducts.length} products found
               </p>
             </div>
@@ -269,20 +376,31 @@ const Products = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="lg:hidden text-xs"
+                        className="lg:hidden text-xs font-light"
                       >
-                        <Filter className="h-3 w-3 mr-2" /> Filters
+                        <Filter className="h-3 w-3 mr-2" strokeWidth={1.5} />{" "}
+                        Filters
                       </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="w-80 overflow-y-auto">
-                      <FilterSidebar />
+                      <SheetHeader>
+                        <SheetTitle className="text-sm font-medium tracking-widest uppercase">
+                          Filter Menu
+                        </SheetTitle>
+                      </SheetHeader>
+                      <div className="mt-6">
+                        <FilterSidebar />
+                      </div>
                     </SheetContent>
                   </Sheet>
 
                   <div className="flex items-center gap-3">
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-[190px] h-9 text-xs border-none bg-transparent hover:bg-muted">
-                        <SlidersHorizontal className="h-3 w-3 mr-2 opacity-50" />
+                      <SelectTrigger className="w-[190px] h-9 text-xs border-none bg-transparent hover:bg-muted font-light">
+                        <SlidersHorizontal
+                          className="h-3 w-3 mr-2 opacity-50"
+                          strokeWidth={1.5}
+                        />
                         <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
                       <SelectContent>
@@ -304,7 +422,7 @@ const Products = () => {
                         className={`h-7 w-7 ${viewMode === "grid" ? "bg-muted" : ""}`}
                         onClick={() => setViewMode("grid")}
                       >
-                        <Grid3X3 className="h-3.5 w-3.5" />
+                        <Grid3X3 className="h-3.5 w-3.5" strokeWidth={1.5} />
                       </Button>
                       <Button
                         variant="ghost"
@@ -312,7 +430,7 @@ const Products = () => {
                         className={`h-7 w-7 ${viewMode === "list" ? "bg-muted" : ""}`}
                         onClick={() => setViewMode("list")}
                       >
-                        <LayoutList className="h-3.5 w-3.5" />
+                        <LayoutList className="h-3.5 w-3.5" strokeWidth={1.5} />
                       </Button>
                     </div>
                   </div>
@@ -320,8 +438,11 @@ const Products = () => {
 
                 {isLoading ? (
                   <div className="flex flex-col items-center justify-center py-32 opacity-50">
-                    <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                    <p className="text-[10px] uppercase tracking-widest">
+                    <Loader2
+                      className="h-8 w-8 animate-spin mb-4"
+                      strokeWidth={1.5}
+                    />
+                    <p className="text-[10px] uppercase tracking-widest font-light">
                       Updating Collection...
                     </p>
                   </div>
@@ -347,13 +468,14 @@ const Products = () => {
                         <h3 className="text-lg font-medium mb-1">
                           No products found
                         </h3>
-                        <p className="text-sm text-muted-foreground mb-6">
+                        <p className="text-sm text-muted-foreground mb-6 font-light">
                           Try adjusting your filters or search criteria
                         </p>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={clearFilters}
+                          className="font-light"
                         >
                           Reset All Filters
                         </Button>
