@@ -8,6 +8,8 @@ import {
   Truck,
   Loader2,
   ChevronRight,
+  CheckCircle2,
+  Mail,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -16,10 +18,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
 
 const Auth = () => {
+  const OTP_RESEND_COOLDOWN_SECONDS = 30;
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
@@ -33,6 +43,16 @@ const Auth = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationEmailSent, setVerificationEmailSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const resendProgressPercent =
+    ((OTP_RESEND_COOLDOWN_SECONDS - resendCooldown) /
+      OTP_RESEND_COOLDOWN_SECONDS) *
+    100;
 
   const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
@@ -46,6 +66,83 @@ const Auth = () => {
       navigate(from, { replace: true });
     }
   }, [user, loading, navigate, from]);
+
+  useEffect(() => {
+    // Any email edit should invalidate the previous verification state.
+    setVerificationEmailSent(false);
+    setVerificationCode("");
+    setEmailVerified(false);
+    setResendCooldown(0);
+  }, [signupEmail]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setResendCooldown((prev) => Math.max(prev - 1, 0));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleSendVerificationCode = async () => {
+    const normalizedEmail = signupEmail.trim();
+
+    if (!normalizedEmail) {
+      toast.error("Please enter your email first.");
+      return;
+    }
+
+    if (resendCooldown > 0) {
+      toast.error(`Please wait ${resendCooldown}s before resending.`);
+      return;
+    }
+
+    try {
+      setIsSendingOtp(true);
+      await api<{ message: string }>("/otp/send", {
+        method: "POST",
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      setVerificationEmailSent(true);
+      setEmailVerified(false);
+      setVerificationCode("");
+      setResendCooldown(OTP_RESEND_COOLDOWN_SECONDS);
+      toast.success("Verification code sent to your email.");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send verification code.");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyEmailCode = async () => {
+    if (verificationCode.length < 6) {
+      toast.error("Enter the 6-digit verification code.");
+      return;
+    }
+
+    try {
+      setIsVerifyingOtp(true);
+      await api<{ message: string }>("/otp/verify", {
+        method: "POST",
+        body: JSON.stringify({
+          email: signupEmail.trim(),
+          otp: verificationCode,
+        }),
+      });
+
+      setEmailVerified(true);
+      toast.success("Email verified successfully.");
+    } catch (error: any) {
+      toast.error(error.message || "Invalid verification code.");
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +177,11 @@ const Auth = () => {
 
     if (!agreedToTerms) {
       toast.error("Please accept the terms.");
+      return;
+    }
+
+    if (!emailVerified) {
+      toast.error("Please verify your email before creating an account.");
       return;
     }
 
@@ -297,6 +399,102 @@ const Auth = () => {
                         onChange={(e) => setSignupEmail(e.target.value)}
                         required
                       />
+                    </div>
+
+                    <div className="rounded-md border border-border/70 bg-muted/20 p-4 space-y-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] font-bold text-muted-foreground">
+                          <Mail className="h-3.5 w-3.5" />
+                          Email Verification
+                        </div>
+                        {emailVerified ? (
+                          <div className="inline-flex items-center gap-1 text-[10px] uppercase tracking-widest text-emerald-600 font-bold">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Verified
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-none text-[10px] uppercase tracking-[0.18em]"
+                          onClick={handleSendVerificationCode}
+                          disabled={isSendingOtp || resendCooldown > 0}
+                        >
+                          {isSendingOtp
+                            ? "Sending..."
+                            : resendCooldown > 0
+                              ? `Resend in ${resendCooldown}s`
+                            : verificationEmailSent
+                              ? "Resend Code"
+                              : "Send Code"}
+                        </Button>
+                        {verificationEmailSent ? (
+                          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                            {resendCooldown > 0
+                              ? `Code sent to ${signupEmail}. Retry in ${resendCooldown}s`
+                              : `Code sent to ${signupEmail}`}
+                          </p>
+                        ) : (
+                          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                            Send a 6-digit code to continue
+                          </p>
+                        )}
+                      </div>
+
+                      {verificationEmailSent && resendCooldown > 0 ? (
+                        <div className="space-y-1.5">
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-border/70">
+                            <div
+                              className="h-full bg-primary transition-all duration-1000 ease-linear"
+                              style={{ width: `${Math.max(resendProgressPercent, 0)}%` }}
+                            />
+                          </div>
+                          <p className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                            You can resend when the bar fills
+                          </p>
+                        </div>
+                      ) : null}
+
+                      {verificationEmailSent ? (
+                        <div className="space-y-3">
+                          <InputOTP
+                            value={verificationCode}
+                            onChange={setVerificationCode}
+                            maxLength={6}
+                            disabled={emailVerified}
+                            containerClassName="justify-start"
+                          >
+                            <InputOTPGroup>
+                              <InputOTPSlot index={0} />
+                              <InputOTPSlot index={1} />
+                              <InputOTPSlot index={2} />
+                              <InputOTPSlot index={3} />
+                              <InputOTPSlot index={4} />
+                              <InputOTPSlot index={5} />
+                            </InputOTPGroup>
+                          </InputOTP>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-none text-[10px] uppercase tracking-[0.18em]"
+                            onClick={handleVerifyEmailCode}
+                            disabled={
+                              emailVerified ||
+                              verificationCode.length < 6 ||
+                              isVerifyingOtp
+                            }
+                          >
+                            {isVerifyingOtp
+                              ? "Verifying..."
+                              : emailVerified
+                                ? "Email Verified"
+                                : "Verify Code"}
+                          </Button>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="space-y-2">
