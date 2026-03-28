@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -43,19 +43,7 @@ const Cart = () => {
 
   const [couponInput, setCouponInput] = useState("");
 
-  const discountAmount = useMemo(() => {
-    if (!appliedCoupon) return 0;
-
-    const discount = appliedCoupon.discount;
-
-    // < 5 → percentage
-    if (discount < 5) {
-      return (subtotal * discount) / 100;
-    }
-
-    // ≥ 5 → fixed NPR
-    return discount;
-  }, [appliedCoupon, subtotal]);
+  const discountAmount = calculateDiscount(subtotal);
 
   // prevent negative total
   const total = Math.max(0, subtotal - discountAmount);
@@ -283,7 +271,7 @@ const Cart = () => {
                         </span>
                       </div>
                       <p className="text-[10px] text-zinc-400">
-                        VAT included where applicable
+                        Shipping calculated at checkout
                       </p>
                     </div>
 

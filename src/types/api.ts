@@ -134,10 +134,15 @@ export interface Order {
   status: OrderStatus;
   paymentMethod: PaymentMethod;
   total: number;
+  subtotal?: number;
+  discount?: number;
+  shippingFee?: number;
   createdAt: string;
   shippingAddress?: any;
   billingAddress?: any;
   items: any[];
+  phone?: string;
+  notes?: string;
 }
 
 export interface CreateOrderDto {

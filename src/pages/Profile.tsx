@@ -648,14 +648,21 @@ const Profile = () => {
                                       >
                                         Download Invoice
                                       </Button>
-                                      <Link
-                                        to={`/track-order?orderNumber=${order.orderNumber}`}
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="p-2 hover:bg-secondary rounded-full transition-colors group/link"
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          window.open(
+                                            `/track-order?orderNumber=${order.orderNumber}`,
+                                            "_blank",
+                                          );
+                                        }}
+                                        className="h-10 w-10 p-2 hover:bg-secondary rounded-full transition-colors group/link"
                                         title="Track Order"
                                       >
                                         <ExternalLink className="h-4 w-4 opacity-40 group-hover/link:opacity-100 group-hover/link:text-primary transition-all" />
-                                      </Link>
+                                      </Button>
                                       <ChevronRight className="h-4 w-4 opacity-20 group-hover:translate-x-1 transition-transform" />
                                     </div>
                                   </div>
@@ -736,27 +743,61 @@ const Profile = () => {
                                   </div>
 
                                   <div className="bg-secondary/20 p-6 pt-4 space-y-3 border-t">
-                                    <div className="flex justify-between text-[10px] uppercase">
-                                      <span className="text-muted-foreground font-bold">
-                                        Total Amount
-                                      </span>
-                                      <span className="text-primary font-bold">
-                                        Rs. {order.total.toLocaleString()}
-                                      </span>
+                                    <div className="space-y-2">
+                                      <div className="flex justify-between text-[10px] uppercase">
+                                        <span className="text-muted-foreground font-bold">
+                                          Subtotal
+                                        </span>
+                                        <span className="font-bold">
+                                          Rs. {order.subtotal?.toLocaleString()}
+                                        </span>
+                                      </div>
+
+                                      {order.discount && order.discount > 0 && (
+                                        <div className="flex justify-between text-[10px] uppercase">
+                                          <span className="text-green-600 font-bold">
+                                            Discount
+                                          </span>
+                                          <span className="text-green-600 font-bold">
+                                            -Rs.{" "}
+                                            {order.discount.toLocaleString()}
+                                          </span>
+                                        </div>
+                                      )}
+
+                                      <div className="flex justify-between text-[10px] uppercase">
+                                        <span className="text-muted-foreground font-bold">
+                                          Shipping
+                                        </span>
+                                        <span className="font-bold">
+                                          Rs.{" "}
+                                          {order.shippingFee?.toLocaleString()}
+                                        </span>
+                                      </div>
+
+                                      <div className="border-t border-border pt-2 flex justify-between text-[10px] uppercase">
+                                        <span className="text-muted-foreground font-bold">
+                                          Total Amount
+                                        </span>
+                                        <span className="text-primary font-bold">
+                                          Rs. {order.total.toLocaleString()}
+                                        </span>
+                                      </div>
                                     </div>
 
                                     <div className="pt-2 flex flex-col gap-2">
                                       <Button
-                                        asChild
                                         className="w-full rounded-none uppercase text-[10px] font-bold h-10 tracking-widest"
                                         variant="default"
+                                        onClick={() =>
+                                          window.open(
+                                            `/track-order?orderNumber=${order.orderNumber}`,
+                                            "_blank",
+                                          )
+                                        }
                                       >
-                                        <Link
-                                          to={`/track-order?orderNumber=${order.orderNumber}`}
-                                        >
-                                          <ExternalLink className="h-3 w-3 mr-2" />
-                                          Track Live Shipment
-                                        </Link>
+                                        <ExternalLink className="h-3 w-3 mr-2" />
+                                        Track Live Shipment
                                       </Button>
                                       <Button
                                         className="w-full rounded-none uppercase text-[10px] font-bold h-10 tracking-widest"

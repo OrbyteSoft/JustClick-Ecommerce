@@ -52,11 +52,29 @@ const TrackOrder = () => {
     [fetchOrderByNumber, setSearchParams],
   );
 
+  // Auto-fetch order when component mounts if orderNumber is in query params
   useEffect(() => {
-    if (queryOrderNumber) {
-      handleTrack(queryOrderNumber);
-    }
-  }, [queryOrderNumber, handleTrack]);
+    const fetchOrder = async () => {
+      if (queryOrderNumber) {
+        const cleanNo = queryOrderNumber.trim().toUpperCase();
+        if (cleanNo) {
+          setError(null);
+          try {
+            await fetchOrderByNumber(cleanNo);
+          } catch (err: any) {
+            setError(err?.message || "Order not found.");
+          }
+        }
+      }
+    };
+
+    fetchOrder();
+  }, [queryOrderNumber, fetchOrderByNumber]);
+
+  // Update input field when queryOrderNumber changes
+  useEffect(() => {
+    setOrderNumberInput(queryOrderNumber);
+  }, [queryOrderNumber]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -321,16 +339,23 @@ const TrackOrder = () => {
                   </div>
                 </div>
               </div>
-            ) : (
-              !isLoading && (
-                <div className="text-center py-20 border-dashed border">
-                  <Activity className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                  <h3 className="font-bold">No Active Search</h3>
-                  <p className="text-sm text-gray-500">
-                    Enter a valid order number.
+            ) : isLoading ? (
+              <div className="flex justify-center items-center py-32">
+                <div className="flex flex-col items-center gap-4">
+                  <Loader2 className="h-8 w-8 animate-spin opacity-60" />
+                  <p className="text-sm text-muted-foreground">
+                    Loading order details...
                   </p>
                 </div>
-              )
+              </div>
+            ) : (
+              <div className="text-center py-20 border-dashed border">
+                <Activity className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                <h3 className="font-bold">No Active Search</h3>
+                <p className="text-sm text-gray-500">
+                  Enter a valid order number.
+                </p>
+              </div>
             )}
           </section>
         </main>

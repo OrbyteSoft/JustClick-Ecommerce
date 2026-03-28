@@ -48,7 +48,14 @@ export const CouponProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const calculateDiscount = (subtotal: number) => {
     if (!appliedCoupon) return 0;
-    return (subtotal * appliedCoupon.discount) / 100;
+
+    // If discount < 5, treat as percentage (e.g., 10% = 10)
+    if (appliedCoupon.discount < 5) {
+      return (subtotal * appliedCoupon.discount) / 100;
+    }
+
+    // If discount >= 5, treat as fixed rupee amount (e.g., Rs. 500 = 500)
+    return appliedCoupon.discount;
   };
 
   return (

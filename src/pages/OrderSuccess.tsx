@@ -213,10 +213,12 @@ const OrderSuccess = () => {
                     <span>Subtotal</span>
                     <span>Rs. {currentOrder?.subtotal?.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-[9px] font-bold uppercase">
-                    <span>VAT (13%)</span>
-                    <span>Rs. {currentOrder?.tax?.toLocaleString()}</span>
-                  </div>
+                  {currentOrder?.discount && currentOrder.discount > 0 && (
+                    <div className="flex justify-between text-[9px] font-bold uppercase text-green-600">
+                      <span>Discount</span>
+                      <span>-Rs. {currentOrder.discount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-[9px] font-bold uppercase">
                     <span>Delivery</span>
                     <span>

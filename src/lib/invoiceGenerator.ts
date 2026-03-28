@@ -99,28 +99,46 @@ export const generateInvoice = (order: any, address: any) => {
   doc.setFontSize(9);
   doc.setTextColor(100);
   doc.text("Subtotal:", 140, finalY);
-  doc.text("Tax (VAT 13%):", 140, finalY + 7); // Updated labeling
-  doc.text("Shipping Fee:", 140, finalY + 14);
+
+  // Add discount row if present
+  let discountY = finalY + 7;
+  if (order.discount && order.discount > 0) {
+    doc.setTextColor(76, 175, 80); // Green for discount
+    doc.text("Discount:", 140, discountY);
+    doc.text(`-Rs. ${order.discount.toLocaleString()}`, 196, discountY, {
+      align: "right",
+    });
+    discountY += 7;
+  } else {
+    discountY = finalY + 7;
+  }
+
+  doc.setTextColor(100);
+  doc.text("Shipping Fee:", 140, discountY);
 
   doc.setTextColor(0);
   doc.setFont("helvetica", "bold");
   doc.text(`Rs. ${order.subtotal?.toLocaleString()}`, 196, finalY, {
     align: "right",
   });
-  doc.text(`Rs. ${order.tax?.toLocaleString()}`, 196, finalY + 7, {
-    align: "right",
-  });
-  doc.text(`Rs. ${order.shippingFee?.toLocaleString()}`, 196, finalY + 14, {
+
+  if (order.discount && order.discount > 0) {
+    doc.setTextColor(76, 175, 80);
+  }
+
+  doc.text(`Rs. ${order.shippingFee?.toLocaleString()}`, 196, discountY, {
     align: "right",
   });
 
   // --- 7. Grand Total (Bold Borderless Style) ---
   doc.setDrawColor(200);
-  doc.line(135, finalY + 18, 196, finalY + 18);
+  const totalLineY = discountY + 4;
+  doc.line(135, totalLineY, 196, totalLineY);
 
+  doc.setTextColor(0);
   doc.setFontSize(12);
-  doc.text("Grand Total:", 140, finalY + 25);
-  doc.text(`Rs. ${order.total?.toLocaleString()}`, 196, finalY + 25, {
+  doc.text("Grand Total:", 140, totalLineY + 7);
+  doc.text(`Rs. ${order.total?.toLocaleString()}`, 196, totalLineY + 7, {
     align: "right",
   });
 

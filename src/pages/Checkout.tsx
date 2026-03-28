@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   Hash,
   QrCode,
+  Tag,
+  X,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -31,6 +33,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAddresses } from "@/contexts/AddressContext";
 import { useOrders } from "@/contexts/OrderContext";
+import { useCoupon } from "@/contexts/CouponContext";
 import { toast } from "sonner";
 
 const Checkout = () => {
@@ -44,6 +47,7 @@ const Checkout = () => {
     isLoading: addrLoading,
   } = useAddresses();
   const { createOrder } = useOrders();
+  const { appliedCoupon, removeCoupon, calculateDiscount } = useCoupon();
 
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("COD");
@@ -89,7 +93,8 @@ const Checkout = () => {
   }, [addresses, selectedAddressId, addrLoading]);
 
   const shippingCost = subtotal > 1000 ? 0 : 50;
-  const total = subtotal + shippingCost;
+  const discountAmount = appliedCoupon ? calculateDiscount(subtotal) : 0;
+  const total = subtotal - discountAmount + shippingCost;
 
   useEffect(() => {
     if (showPaymentModal) {
@@ -148,6 +153,8 @@ const Checkout = () => {
         phone: formData.phone,
         notes: formData.notes,
         transactionId: paymentMethod !== "COD" ? transactionId : undefined,
+        total: total, // Final total with discount applied, no VAT
+        discount: discountAmount, // Discount amount applied
       });
 
       if (order) {
@@ -397,6 +404,21 @@ const Checkout = () => {
                         {formatPrice(subtotal)}
                       </span>
                     </div>
+                    {appliedCoupon && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <Tag className="h-4 w-4 text-primary" />
+                          Discount (
+                          {appliedCoupon.discount < 5
+                            ? `${appliedCoupon.discount}%`
+                            : `Rs. ${appliedCoupon.discount}`}
+                          )
+                        </span>
+                        <span className="font-semibold text-green-600">
+                          -{formatPrice(discountAmount)}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-muted-foreground">
                       <span>Shipping Fee</span>
                       <span className="text-foreground">
@@ -410,6 +432,25 @@ const Checkout = () => {
                       <span>{formatPrice(total)}</span>
                     </div>
                   </div>
+
+                  {appliedCoupon && (
+                    <div className="mt-4 flex items-center justify-between bg-green-50 dark:bg-green-950/20 p-3 border border-green-200 dark:border-green-900 rounded">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-semibold text-green-700 dark:text-green-400">
+                          {appliedCoupon.code}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        className="text-green-600 hover:text-red-600 transition-colors"
+                        title="Remove coupon"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
 
                   <Button
                     form="checkout-form"
