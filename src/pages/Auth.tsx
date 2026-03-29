@@ -102,16 +102,23 @@ const Auth = () => {
 
     try {
       setIsSendingOtp(true);
-      await api<{ message: string }>("/otp/send", {
+      const response = await api<{ message: string; previewOtp?: string }>(
+        "/otp/send",
+        {
         method: "POST",
         body: JSON.stringify({ email: normalizedEmail }),
-      });
+        },
+      );
 
       setVerificationEmailSent(true);
       setEmailVerified(false);
       setVerificationCode("");
       setResendCooldown(OTP_RESEND_COOLDOWN_SECONDS);
-      toast.success("Verification code sent to your email.");
+      toast.success(
+        response.previewOtp
+          ? `Verification code sent. Dev OTP: ${response.previewOtp}`
+          : "Verification code sent to your email.",
+      );
     } catch (error: any) {
       toast.error(error.message || "Failed to send verification code.");
     } finally {

@@ -13,6 +13,7 @@ import {
   QrCode,
   Tag,
   X,
+  Smartphone,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -35,8 +36,16 @@ import { useAddresses } from "@/contexts/AddressContext";
 import { useOrders } from "@/contexts/OrderContext";
 import { useCoupon } from "@/contexts/CouponContext";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 const Checkout = () => {
+  const OTP_RESEND_COOLDOWN_SECONDS = 30;
+
   const navigate = useNavigate();
   const { cartItems, subtotal, clearCart, isLoading: cartLoading } = useCart();
   const { user } = useAuth();
@@ -60,9 +69,15 @@ const Checkout = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [transactionId, setTransactionId] = useState("");
   const [uniqueTotal, setUniqueTotal] = useState(0);
+  const [phoneOtpCode, setPhoneOtpCode] = useState("");
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [isSendingPhoneOtp, setIsSendingPhoneOtp] = useState(false);
+  const [isVerifyingPhoneOtp, setIsVerifyingPhoneOtp] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
 
   const [formData, setFormData] = useState({
-    phone: "",
+    phone: "+977",
     line1: "",
     city: "",
     zipCode: "",
@@ -106,10 +121,121 @@ const Checkout = () => {
   const formatPrice = (price: number) =>
     `Rs. ${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
+  const otpProgressPercent =
+    ((OTP_RESEND_COOLDOWN_SECONDS - otpCooldown) /
+      OTP_RESEND_COOLDOWN_SECONDS) *
+    100;
+
+  const toE164Phone = (input: string): string | null => {
+    const raw = input.trim().replace(/\s+/g, "");
+
+    if (!raw) return null;
+    if (/^\+\d{8,15}$/.test(raw)) return raw;
+
+    if (/^0\d+$/.test(raw)) {
+      const local = raw.slice(1);
+      if (/^9\d{9}$/.test(local)) return `+977${local}`;
+    }
+
+    if (/^9\d{9}$/.test(raw)) {
+      return `+977${raw}`;
+    }
+
+    return null;
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === "phone") {
+      setPhoneOtpSent(false);
+      setPhoneVerified(false);
+      setPhoneOtpCode("");
+      setOtpCooldown(0);
+    }
+  };
+
+  useEffect(() => {
+    if (otpCooldown <= 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setOtpCooldown((prev) => Math.max(prev - 1, 0));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [otpCooldown]);
+
+  const handleSendPhoneOtp = async () => {
+    const normalizedPhone = toE164Phone(formData.phone);
+
+    if (!normalizedPhone) {
+      toast.error("Enter a valid phone number (e.g. 98XXXXXXXX or +9779XXXXXXXX).");
+      return;
+    }
+
+    if (otpCooldown > 0) {
+      toast.error(`Please wait ${otpCooldown}s before resending.`);
+      return;
+    }
+
+    try {
+      setIsSendingPhoneOtp(true);
+      const response = await api<{ message: string; previewOtp?: string }>(
+        "/otp/send",
+        {
+        method: "POST",
+        body: JSON.stringify({ phone: normalizedPhone }),
+        },
+      );
+
+      setPhoneOtpSent(true);
+      setPhoneVerified(false);
+      setPhoneOtpCode("");
+      setOtpCooldown(OTP_RESEND_COOLDOWN_SECONDS);
+      toast.success(
+        response.previewOtp
+          ? `OTP sent. Dev OTP: ${response.previewOtp}`
+          : "OTP sent to your phone.",
+      );
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send phone OTP.");
+    } finally {
+      setIsSendingPhoneOtp(false);
+    }
+  };
+
+  const handleVerifyPhoneOtp = async () => {
+    const normalizedPhone = toE164Phone(formData.phone);
+
+    if (!normalizedPhone) {
+      toast.error("Enter a valid phone number first.");
+      return;
+    }
+
+    if (phoneOtpCode.length < 6) {
+      toast.error("Enter the 6-digit OTP.");
+      return;
+    }
+
+    try {
+      setIsVerifyingPhoneOtp(true);
+      await api<{ message: string }>("/otp/verify", {
+        method: "POST",
+        body: JSON.stringify({ phone: normalizedPhone, otp: phoneOtpCode }),
+      });
+
+      setPhoneVerified(true);
+      toast.success("Phone number verified.");
+    } catch (error: any) {
+      toast.error(error.message || "Invalid OTP.");
+    } finally {
+      setIsVerifyingPhoneOtp(false);
+    }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -126,6 +252,7 @@ const Checkout = () => {
   };
 
   const processOrder = async () => {
+
     if (paymentMethod !== "COD" && !transactionId) {
       return toast.error("Please enter the Transaction ID to verify payment");
     }
@@ -311,7 +438,7 @@ const Checkout = () => {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          placeholder="98XXXXXXXX"
+                          placeholder="+9779XXXXXXXX"
                           required
                         />
                       </div>
